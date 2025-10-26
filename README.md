@@ -15,4 +15,8 @@ dvc pull
 dvc repro
 
 docker run --rm -p 3000:3000 celestial-bodies-classifier:latest
+
+kubectl apply -f kubernetes/runner.yaml
+kubectl get pods
+kubectl delete -f kubernetes/runner.yaml
 ```
