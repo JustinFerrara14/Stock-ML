@@ -10,4 +10,6 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 pip freeze --local --all > requirements-freeze.txt
+
+dvc repro
 ```
