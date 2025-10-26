@@ -13,4 +13,6 @@ pip freeze --local --all > requirements-freeze.txt
 
 dvc pull
 dvc repro
+
+docker run --rm -p 3000:3000 celestial-bodies-classifier:latest
 ```
