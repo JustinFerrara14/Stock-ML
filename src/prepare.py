@@ -1,32 +1,58 @@
 import json
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import tensorflow as tf
 import yaml
 
 from utils.seed import set_seed
 
 
-def get_preview_plot(ds: tf.data.Dataset, labels: List[str]) -> plt.Figure:
-    """Plot a preview of the prepared dataset"""
-    fig = plt.figure(figsize=(10, 5), tight_layout=True)
-    for images, label_idxs in ds.take(1):
-        for i in range(10):
-            plt.subplot(2, 5, i + 1)
-            plt.imshow(images[i].numpy().astype("uint8"), cmap="gray")
-            plt.title(labels[label_idxs[i].numpy()])
-            plt.axis("off")
+def load_financial_csv(file_path: Path) -> pd.DataFrame:
+    """Load and clean a financial CSV file."""
+    df = pd.read_csv(file_path)
+    df.columns = [c.strip() for c in df.columns]  # Clean headers
 
+    # Clean dollar signs and convert to float
+    for col in ["Close/Last", "Open", "High", "Low"]:
+        df[col] = df[col].replace({'\$': ''}, regex=True).astype(float)
+
+    df["Volume"] = df["Volume"].astype(float)
+    df["Date"] = pd.to_datetime(df["Date"])
+    df.sort_values("Date", inplace=True)
+
+    return df
+
+
+def get_preview_plot(data_dict: dict[str, pd.DataFrame]) -> plt.Figure:
+    """Plot preview of closing prices for a few companies."""
+    fig = plt.figure(figsize=(10, 5), tight_layout=True)
+    for i, (name, df) in enumerate(list(data_dict.items())[:5]):
+        plt.plot(df["Date"], df["Close/Last"], label=name)
+    plt.xlabel("Date")
+    plt.ylabel("Close Price ($)")
+    plt.title("Stock Price Preview")
+    plt.legend()
     return fig
+
+
+def split_dataset(df: pd.DataFrame, split_ratio: float, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Split data into train/test based on date."""
+    df = df.sort_values("Date")
+    n = len(df)
+    split_idx = int(n * (1 - split_ratio))
+    df_train = df.iloc[:split_idx]
+    df_test = df.iloc[split_idx:]
+    return df_train, df_test
 
 
 def main() -> None:
     if len(sys.argv) != 3:
         print("Arguments error. Usage:\n")
-        print("\tpython3 prepare.py <raw-dataset-folder> <prepared-dataset-folder>\n")
+        print("\tpython3 prepare_financial_data.py <raw-dataset-folder> <prepared-dataset-folder>\n")
         exit(1)
 
     # Load parameters
@@ -36,48 +62,46 @@ def main() -> None:
     prepared_dataset_folder = Path(sys.argv[2])
     seed = prepare_params["seed"]
     split = prepare_params["split"]
-    image_size = prepare_params["image_size"]
-    grayscale = prepare_params["grayscale"]
 
     # Set seed for reproducibility
     set_seed(seed)
 
-    # Read data
-    ds_train, ds_test = tf.keras.utils.image_dataset_from_directory(
-        raw_dataset_folder,
-        labels="inferred",
-        label_mode="int",
-        color_mode="grayscale" if grayscale else "rgb",
-        batch_size=32,
-        image_size=image_size,
-        shuffle=True,
-        seed=seed,
-        validation_split=split,
-        subset="both",
-    )
-    labels = ds_train.class_names
+    # Load all company CSVs
+    data_dict = {}
+    for csv_file in raw_dataset_folder.glob("*.csv"):
+        company_name = csv_file.stem
+        df = load_financial_csv(csv_file)
+        data_dict[company_name] = df
 
     if not prepared_dataset_folder.exists():
         prepared_dataset_folder.mkdir(parents=True)
 
-    # Save the preview plot
-    preview_plot = get_preview_plot(ds_train, labels)
+    # Save preview plot
+    preview_plot = get_preview_plot(data_dict)
     preview_plot.savefig(prepared_dataset_folder / "preview.png")
 
-    # Normalize the data
-    normalization_layer = tf.keras.layers.Rescaling(
-        1.0 / 255
-    )
-    ds_train = ds_train.map(lambda x, y: (normalization_layer(x), y))
-    ds_test = ds_test.map(lambda x, y: (normalization_layer(x), y))
+    # Normalize and split
+    train_data, test_data = {}, {}
+    for name, df in data_dict.items():
+        df_train, df_test = split_dataset(df, split, seed)
 
-    # Save the prepared dataset
-    with open(prepared_dataset_folder / "labels.json", "w") as f:
-        json.dump(labels, f)
-    tf.data.Dataset.save(ds_train, str(prepared_dataset_folder / "train"))
-    tf.data.Dataset.save(ds_test, str(prepared_dataset_folder / "test"))
+        # Normalize numeric columns (except Date)
+        numeric_cols = ["Close/Last", "Open", "High", "Low", "Volume"]
+        df_train[numeric_cols] = (df_train[numeric_cols] - df_train[numeric_cols].mean()) / df_train[numeric_cols].std()
+        df_test[numeric_cols] = (df_test[numeric_cols] - df_train[numeric_cols].mean()) / df_train[numeric_cols].std()
 
-    print(f"\nDataset saved at {prepared_dataset_folder.absolute()}")
+        train_data[name] = df_train
+        test_data[name] = df_test
+
+        # Save per-company CSVs
+        df_train.to_csv(prepared_dataset_folder / f"{name}_train.csv", index=False)
+        df_test.to_csv(prepared_dataset_folder / f"{name}_test.csv", index=False)
+
+    # Save metadata
+    with open(prepared_dataset_folder / "companies.json", "w") as f:
+        json.dump(list(data_dict.keys()), f)
+
+    print(f"\nPrepared data saved at {prepared_dataset_folder.absolute()}")
 
 
 if __name__ == "__main__":
