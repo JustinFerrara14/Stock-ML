@@ -12,9 +12,21 @@ import bentoml
 from utils.seed import set_seed
 
 
-def load_financial_data(prepared_folder: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Load and concatenate all company CSVs into train/test sets."""
-    train_dfs, test_dfs = [], []
+def create_sequences(df: pd.DataFrame, input_len, output_len):
+    """Create sliding windows of input_len days to predict next output_len days."""
+    features = df[["Open", "High", "Low", "Volume"]].values
+    target = df["Close/Last"].values
+    X, y = [], []
+
+    for i in range(len(df) - input_len - output_len):
+        X.append(features[i:i+input_len])
+        y.append(target[i+input_len:i+input_len+output_len])
+    return np.array(X), np.array(y)
+
+
+def load_sequence_data(prepared_folder: Path, input_len, output_len) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Load all companies' CSVs and create sequence-based train/test datasets."""
+    X_train_list, y_train_list, X_test_list, y_test_list = [], [], [], []
 
     for train_file in prepared_folder.glob("*_train.csv"):
         test_file = prepared_folder / train_file.name.replace("_train.csv", "_test.csv")
@@ -22,38 +34,39 @@ def load_financial_data(prepared_folder: Path) -> Tuple[np.ndarray, np.ndarray, 
         df_train = pd.read_csv(train_file)
         df_test = pd.read_csv(test_file)
 
-        # Ensure date is sorted (time order)
+        # Sort by date
         df_train.sort_values("Date", inplace=True)
         df_test.sort_values("Date", inplace=True)
 
-        # Features: Open, High, Low, Volume
-        X_train = df_train[["Open", "High", "Low", "Volume"]].values
-        X_test = df_test[["Open", "High", "Low", "Volume"]].values
+        # Create input sequences (X) and targets (y)
+        X_train, y_train = create_sequences(df_train, input_len, output_len)
+        X_test, y_test = create_sequences(df_test, input_len, output_len)
 
-        # Target: Close/Last
-        y_train = df_train["Close/Last"].values
-        y_test = df_test["Close/Last"].values
+        if len(X_train) > 0:
+            X_train_list.append(X_train)
+            y_train_list.append(y_train)
+        if len(X_test) > 0:
+            X_test_list.append(X_test)
+            y_test_list.append(y_test)
 
-        train_dfs.append((X_train, y_train))
-        test_dfs.append((X_test, y_test))
-
-    # Concatenate all companies
-    X_train = np.concatenate([x for x, _ in train_dfs])
-    y_train = np.concatenate([y for _, y in train_dfs])
-    X_test = np.concatenate([x for x, _ in test_dfs])
-    y_test = np.concatenate([y for _, y in test_dfs])
+    # Combine across companies
+    X_train = np.concatenate(X_train_list)
+    y_train = np.concatenate(y_train_list)
+    X_test = np.concatenate(X_test_list)
+    y_test = np.concatenate(y_test_list)
 
     return X_train, y_train, X_test, y_test
 
 
-def get_regression_model(input_dim: int, hidden_size: int) -> tf.keras.Model:
-    """Simple dense regression model for stock price prediction."""
-    model = tf.keras.Sequential([
-        tf.keras.layers.Input(shape=(input_dim,)),
-        tf.keras.layers.Dense(hidden_size, activation="relu"),
-        tf.keras.layers.Dense(hidden_size // 2, activation="relu"),
-        tf.keras.layers.Dense(1)  # predict close price
-    ])
+def get_sequence_model(input_len: int, input_dim: int, output_len: int, hidden_num_layers: int, hidden_size: int, dropout: float) -> tf.keras.Model:
+    """LSTM model for next-5-day price prediction."""
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Input(shape=(input_len, input_dim)))
+    for _ in range(hidden_num_layers):
+        model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=True, dropout=dropout))
+    model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=False, dropout=dropout))
+    model.add(tf.keras.layers.Dense(output_len))  # predict next x days
+
     return model
 
 
@@ -65,7 +78,6 @@ def main() -> None:
 
     # Load parameters
     params = yaml.safe_load(open("params.yaml"))
-    prepare_params = params["prepare"]
     train_params = params["train"]
 
     prepared_dataset_folder = Path(sys.argv[1])
@@ -74,25 +86,38 @@ def main() -> None:
     seed = train_params["seed"]
     lr = train_params["lr"]
     epochs = train_params["epochs"]
+    hidden_num_layers = train_params.get("hidden_num_layers", 2)
     hidden_size = train_params["hidden_size"]
+    dropout = train_params.get("dropout")
+    input_len = train_params["input_length"]
+    output_len = train_params["output_length"]
 
-    # Set seed for reproducibility
+    # Set reproducibility
     set_seed(seed)
 
     # Load data
-    X_train, y_train, X_test, y_test = load_financial_data(prepared_dataset_folder)
-    print(f"Loaded {len(X_train)} training samples, {len(X_test)} test samples")
+    X_train, y_train, X_test, y_test = load_sequence_data(prepared_dataset_folder, input_len, output_len)
+    print(f"Loaded {len(X_train)} train sequences, {len(X_test)} test sequences")
 
-    # Define model
-    model = get_regression_model(input_dim=X_train.shape[1], hidden_size=hidden_size)
+    # Build model
+    model = get_sequence_model(
+        input_len=X_train.shape[1],
+        input_dim=X_train.shape[2],
+        output_len=y_train.shape[1],
+        hidden_num_layers=hidden_num_layers,
+        hidden_size=hidden_size,
+        dropout=dropout,
+    )
+
     model.compile(
         optimizer=tf.keras.optimizers.Adam(lr),
         loss="mse",
         metrics=["mae"]
     )
+
     model.summary()
 
-    # Train
+    # Train model
     history = model.fit(
         X_train, y_train,
         validation_data=(X_test, y_test),
@@ -101,21 +126,20 @@ def main() -> None:
         verbose=1
     )
 
-    # Save model folder
+    # Save model
     model_folder.mkdir(parents=True, exist_ok=True)
 
-    # Define BentoML preprocess/postprocess
-    def preprocess(x: Dict[str, float]):
-        """Convert JSON input (Open, High, Low, Volume) to model input array."""
-        return np.array([[x["Open"], x["High"], x["Low"], x["Volume"]]], dtype=np.float32)
+    def preprocess(x: Dict[str, list]):
+        """Preprocess last 30 days of input (dict with lists) for prediction."""
+        arr = np.array([[v["Open"], v["High"], v["Low"], v["Volume"]] for v in x[-30:]])
+        return np.expand_dims(arr, axis=0).astype(np.float32)
 
     def postprocess(pred):
-        """Convert model prediction to JSON."""
-        return {"predicted_close": float(pred[0][0])}
+        """Convert model output (5-day forecast) to JSON."""
+        return {"predicted_close_next5": pred[0].tolist()}
 
-    # Save the model with BentoML
     bentoml.keras.save_model(
-        "financial_forecast_model",
+        "financial_forecast_model_seq",
         model,
         include_optimizer=True,
         custom_objects={
@@ -125,11 +149,10 @@ def main() -> None:
     )
 
     bentoml.models.export_model(
-        "financial_forecast_model:latest",
-        f"{model_folder}/financial_forecast_model.bentomodel",
+        "financial_forecast_model_seq:latest",
+        f"{model_folder}/financial_forecast_model_seq.bentomodel",
     )
 
-    # Save training history
     np.save(model_folder / "history.npy", history.history)
     print(f"\nModel saved at {model_folder.absolute()}")
 

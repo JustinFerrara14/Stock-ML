@@ -8,4 +8,8 @@ train:
   seed: 77
   lr: 0.001
   epochs: 32
-  hidden_size: 128
+  hidden_num_layers: 2
+  hidden_size: 64
+  dropout: 0.2
+  input_length: 30
+  output_length: 5

@@ -27,6 +27,4 @@ stages:
     metrics:
     - evaluation/metrics.json
     plots:
-    - evaluation/plots/pred_vs_true.png
-    - evaluation/plots/residuals.png
-    - evaluation/plots/training_history.png
+    - evaluation/plots/forecast_example.png

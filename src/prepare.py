@@ -87,8 +87,10 @@ def main() -> None:
 
         # Normalize numeric columns (except Date)
         numeric_cols = ["Close/Last", "Open", "High", "Low", "Volume"]
-        df_train[numeric_cols] = (df_train[numeric_cols] - df_train[numeric_cols].mean()) / df_train[numeric_cols].std()
-        df_test[numeric_cols] = (df_test[numeric_cols] - df_train[numeric_cols].mean()) / df_train[numeric_cols].std()
+        mean = df_train[numeric_cols].mean()
+        std = df_train[numeric_cols].std()
+        df_train[numeric_cols] = (df_train[numeric_cols] - mean) / std
+        df_test[numeric_cols] = (df_test[numeric_cols] - mean) / std
 
         train_data[name] = df_train
         test_data[name] = df_test
@@ -96,6 +98,13 @@ def main() -> None:
         # Save per-company CSVs
         df_train.to_csv(prepared_dataset_folder / f"{name}_train.csv", index=False)
         df_test.to_csv(prepared_dataset_folder / f"{name}_test.csv", index=False)
+
+        norm_stats = {
+            "mean": mean.to_dict(),
+            "std": std.to_dict()
+        }
+        with open(prepared_dataset_folder / f"{name}_norm.json", "w") as f:
+            json.dump(norm_stats, f, indent=4)
 
     # Save metadata
     with open(prepared_dataset_folder / "companies.json", "w") as f:
