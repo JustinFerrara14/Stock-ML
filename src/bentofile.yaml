@@ -1,4 +1,4 @@
-service: 'serve:CelestialBodiesClassifierService'
+service: 'serve:FinancialForecastService'
 include:
   - serve.py
 python:

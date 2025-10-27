@@ -14,9 +14,50 @@ pip freeze --local --all > requirements-freeze.txt
 dvc pull
 dvc repro
 
-docker run --rm -p 3000:3000 celestial-bodies-classifier:latest
+bentoml containerize stock_ml:latest --image-tag stock-ml:latest
+docker run --rm -p 3000:3000 stock-ml:latest
 
 kubectl apply -f kubernetes/runner.yaml
 kubectl get pods
 kubectl delete -f kubernetes/runner.yaml
+```
+
+
+Predict stock request:
+
+```json
+{
+  "stock_data": [
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
+    {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000}
+  ]
+}
 ```
