@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import Tuple, Dict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -97,7 +98,7 @@ def main() -> None:
 
     # Load data
     X_train, y_train, X_test, y_test = load_sequence_data(prepared_dataset_folder, input_len, output_len)
-    print(f"Loaded {len(X_train)} train sequences, {len(X_test)} test sequences")
+    print(f"\nLoaded {len(X_train)} train sequences, {len(X_test)} test sequences\n")
 
     # Build model
     model = get_sequence_model(
@@ -125,6 +126,23 @@ def main() -> None:
         batch_size=32,
         verbose=1
     )
+
+    # Plot training vs validation loss
+    evaluation_folder = Path("evaluation")
+    plots_folder = evaluation_folder / "plots"
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(history.history["loss"], label="Train Loss")
+    plt.plot(history.history["val_loss"], label="Validation Loss")
+    plt.title("Training vs Validation Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("MSE Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(plots_folder / "loss_curve.png")
+    plt.close()
+
 
     # Save model
     model_folder.mkdir(parents=True, exist_ok=True)
