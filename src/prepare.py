@@ -29,7 +29,7 @@ def load_financial_csv(file_path: Path) -> pd.DataFrame:
 def add_return_column(df: pd.DataFrame) -> pd.DataFrame:
     """Add percentage variation (returns) based on Close/Last."""
     df = df.sort_values("Date").copy()
-    df["Return"] = df["Close/Last"].pct_change() * 100  # % variation
+    df["Return"] = df["Close/Last"].pct_change() * 100  # % variation TODO too big !!!!
     df.dropna(inplace=True)
     return df
 
