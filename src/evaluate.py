@@ -13,8 +13,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 def load_test_sequences(prepared_folder: Path, input_len=30, output_len=5):
     """Load and build sequence-based test data."""
     def create_sequences(df):
-        features = df[["Open", "High", "Low", "Volume"]].values
-        target = df["Close/Last"].values
+        features = df[["Return"]].values
+        target = df["Return"].values
         X, y = [], []
         for i in range(len(df) - input_len - output_len):
             X.append(features[i:i+input_len])
@@ -32,19 +32,31 @@ def load_test_sequences(prepared_folder: Path, input_len=30, output_len=5):
 
     return np.concatenate(Xs), np.concatenate(ys)
 
+def plot_forecast_example(y_true, y_pred, X_test, sample_idx=0):
+    """
+    Show previous 30 days (input) + next 5 days (true vs predicted).
+    X_test: input sequences (30-day returns)
+    y_true: true next 5-day returns
+    y_pred: predicted next 5-day returns
+    """
+    past_returns = X_test[sample_idx].flatten()
+    true_future = y_true[sample_idx]
+    pred_future = y_pred[sample_idx]
 
-def plot_forecast_example(y_true, y_pred, sample_idx=0):
-    """Show true vs predicted 5-day forecast for one sample."""
-    fig = plt.figure(figsize=(8, 4))
-    plt.plot(range(5), y_true[sample_idx], marker="o", label="True")
-    plt.plot(range(5), y_pred[sample_idx], marker="x", label="Predicted")
-    plt.title("Next 5-Day Forecast (Example)")
-    plt.xlabel("Day Ahead")
-    plt.ylabel("Close Price (normalized)")
+    # Combine for full timeline
+    days = np.arange(len(past_returns) + len(true_future))
+    fig = plt.figure(figsize=(10, 5))
+    plt.plot(days[:len(past_returns)], past_returns, label="Past 30d Returns", color="gray", linestyle="--")
+    plt.plot(days[len(past_returns):], true_future, marker="o", label="True Next 5d", color="green")
+    plt.plot(days[len(past_returns):], pred_future, marker="x", label="Predicted Next 5d", color="orange")
+
+    plt.axvline(x=len(past_returns), color="black", linestyle=":", label="Forecast Start")
+    plt.title(f"Stock Return Forecast Example (Sample {sample_idx})")
+    plt.xlabel("Days (Past 30 + Next 5)")
+    plt.ylabel("Return (%)")
     plt.legend()
     plt.grid(True)
     return fig
-
 
 def main() -> None:
     if len(sys.argv) != 3:
@@ -74,32 +86,40 @@ def main() -> None:
     # Predict on test set
     y_pred = model.predict(X_test)
 
-    # Get normalized values
-    norm_file = next(prepared_dataset_folder.glob("*_norm.json"))
-    with open(norm_file, "r") as f:
-        norm = json.load(f)
-
-    mean = norm["mean"]["Close/Last"]
-    std = norm["std"]["Close/Last"]
-
-    # Denormalize
-    y_test_real = y_test * std + mean
-    y_pred_real = y_pred * std + mean
-
-    # Compute metrics in real price scale
-    mae = mean_absolute_error(y_test_real.flatten(), y_pred_real.flatten())
-    mse = mean_squared_error(y_test_real.flatten(), y_pred_real.flatten())
+    # Compute metrics with price scale
+    mae = mean_absolute_error(y_test.flatten(), y_pred.flatten())
+    mse = mean_squared_error(y_test.flatten(), y_pred.flatten())
     rmse = np.sqrt(mse)
-    r2 = r2_score(y_test_real.flatten(), y_pred_real.flatten())
+    r2 = r2_score(y_test.flatten(), y_pred.flatten())
 
     print(f"Validation MAE:  {mae:.4f}")
     print(f"Validation RMSE: {rmse:.4f}")
     print(f"R² Score:        {r2:.4f}")
 
+    # Compute per-sample RMSE
+    sample_errors = np.sqrt(np.mean((y_pred - y_test) ** 2, axis=1))
+
+    # Get indices of 2 best and 2 worst predictions
+    best_indices = np.argsort(sample_errors)[:2]
+    worst_indices = np.argsort(sample_errors)[-2:]
+
+    # Create plots
+    for idx in best_indices:
+        fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
+        fig.suptitle(f"Best Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
+        fig.savefig(plots_folder / f"best_prediction_{idx}.png")
+        plt.close(fig)
+
+    for idx in worst_indices:
+        fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
+        fig.suptitle(f"Worst Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
+        fig.savefig(plots_folder / f"worst_prediction_{idx}.png")
+        plt.close(fig)
+
     with open(evaluation_folder / "metrics.json", "w") as f:
         json.dump({"mae": mae, "rmse": rmse, "r2": r2}, f, indent=4)
 
-    plot_forecast_example(y_test, y_pred).savefig(plots_folder / "forecast_example.png")
+    plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx).savefig(plots_folder / "forecast_example.png")
 
     print(f"\nEvaluation results saved in {evaluation_folder.absolute()}")
 

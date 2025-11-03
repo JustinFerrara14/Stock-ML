@@ -13,9 +13,9 @@ from utils.seed import set_seed
 
 
 def create_sequences(df: pd.DataFrame, input_len, output_len):
-    """Create sliding windows of input_len days to predict next output_len days."""
-    features = df[["Open", "High", "Low", "Volume"]].values
-    target = df["Close/Last"].values
+    """Create sliding windows of input_len days of % returns to predict next output_len days."""
+    features = df[["Return"]].values
+    target = df["Return"].values
     X, y = [], []
 
     for i in range(len(df) - input_len - output_len):
@@ -136,7 +136,7 @@ def main() -> None:
 
     def postprocess(pred):
         """Convert model output (5-day forecast) to JSON."""
-        return {"predicted_close_next5": pred[0].tolist()}
+        return {"predicted_return_next5": pred[0].tolist()}
 
     bentoml.keras.save_model(
         "financial_forecast_model_seq",

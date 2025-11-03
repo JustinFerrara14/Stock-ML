@@ -26,15 +26,22 @@ def load_financial_csv(file_path: Path) -> pd.DataFrame:
 
     return df
 
+def add_return_column(df: pd.DataFrame) -> pd.DataFrame:
+    """Add percentage variation (returns) based on Close/Last."""
+    df = df.sort_values("Date").copy()
+    df["Return"] = df["Close/Last"].pct_change() * 100  # % variation
+    df.dropna(inplace=True)
+    return df
+
 
 def get_preview_plot(data_dict: dict[str, pd.DataFrame]) -> plt.Figure:
     """Plot preview of closing prices for a few companies."""
     fig = plt.figure(figsize=(10, 5), tight_layout=True)
-    for i, (name, df) in enumerate(list(data_dict.items())[:5]):
-        plt.plot(df["Date"], df["Close/Last"], label=name)
-    plt.xlabel("Date")
-    plt.ylabel("Close Price ($)")
-    plt.title("Stock Price Preview")
+    for i, (name, df) in enumerate(list(data_dict.items())[:2]):
+        plt.plot(df["Date"], df["Return"], label=name)
+    plt.plot(df["Date"], df["Return"], label=name)
+    plt.ylabel("Daily Return (%)")
+    plt.title("Stock Return Preview")
     plt.legend()
     return fig
 
@@ -71,6 +78,7 @@ def main() -> None:
     for csv_file in raw_dataset_folder.glob("*.csv"):
         company_name = csv_file.stem
         df = load_financial_csv(csv_file)
+        df = add_return_column(df)
         data_dict[company_name] = df
 
     if not prepared_dataset_folder.exists():
@@ -86,11 +94,9 @@ def main() -> None:
         df_train, df_test = split_dataset(df, split, seed)
 
         # Normalize numeric columns (except Date)
-        numeric_cols = ["Close/Last", "Open", "High", "Low", "Volume"]
+        numeric_cols = ["Return", "Volume"]
         mean = df_train[numeric_cols].mean()
         std = df_train[numeric_cols].std()
-        df_train[numeric_cols] = (df_train[numeric_cols] - mean) / std
-        df_test[numeric_cols] = (df_test[numeric_cols] - mean) / std
 
         train_data[name] = df_train
         test_data[name] = df_test
@@ -98,13 +104,6 @@ def main() -> None:
         # Save per-company CSVs
         df_train.to_csv(prepared_dataset_folder / f"{name}_train.csv", index=False)
         df_test.to_csv(prepared_dataset_folder / f"{name}_test.csv", index=False)
-
-        norm_stats = {
-            "mean": mean.to_dict(),
-            "std": std.to_dict()
-        }
-        with open(prepared_dataset_folder / f"{name}_norm.json", "w") as f:
-            json.dump(norm_stats, f, indent=4)
 
     # Save metadata
     with open(prepared_dataset_folder / "companies.json", "w") as f:

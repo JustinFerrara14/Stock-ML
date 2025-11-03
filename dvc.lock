@@ -5,13 +5,13 @@ stages:
     deps:
     - path: data/raw
       hash: md5
-      md5: 45af7ee6ab0d0dc010120816d14c7aa7.dir
-      size: 1121760
-      nfiles: 17
+      md5: 67f22fdf533f1e6502a1b4fa775be1ce.dir
+      size: 1315894
+      nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: 471ce97d1fd9f3f93ba46439a797f3fb
-      size: 3746
+      md5: 678a3ffdc713175d485d3e65ad86d6c8
+      size: 3689
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -28,21 +28,21 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: 22e977c029440a9acd2b7f673cef30a3.dir
-      size: 2419470
-      nfiles: 53
+      md5: c7b973451ad6c8bfb5659bfbcc4354ac.dir
+      size: 1788502
+      nfiles: 42
   train:
     cmd: python3.12 src/train.py data/prepared model
     deps:
     - path: data/prepared
       hash: md5
-      md5: 22e977c029440a9acd2b7f673cef30a3.dir
-      size: 2419470
-      nfiles: 53
+      md5: c7b973451ad6c8bfb5659bfbcc4354ac.dir
+      size: 1788502
+      nfiles: 42
     - path: src/train.py
       hash: md5
-      md5: 93a45922e59f5b8e0aeff8400fe704d7
-      size: 5209
+      md5: 01dc6012f34d4ae1d5750c889dc8b674
+      size: 5196
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -53,35 +53,35 @@ stages:
           seed: 77
           lr: 0.001
           epochs: 32
-          hidden_num_layers: 2
-          hidden_size: 64
-          dropout: 0.2
+          hidden_num_layers: 1
+          hidden_size: 32
+          dropout: 0.1
           input_length: 30
           output_length: 5
     outs:
     - path: model
       hash: md5
-      md5: f7a140330901c1fcf7b6640105b93071.dir
-      size: 944759
+      md5: 15a4a4413b2bd22cbde5692b594e3508.dir
+      size: 147775
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared
     deps:
     - path: model
       hash: md5
-      md5: f7a140330901c1fcf7b6640105b93071.dir
-      size: 944759
+      md5: 15a4a4413b2bd22cbde5692b594e3508.dir
+      size: 147775
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
-      md5: 3366c4405c0e0ef66478232b3ae7f570
-      size: 3606
+      md5: bdafc88cd9616c82ceb53184ad358c1a
+      size: 4741
     outs:
     - path: evaluation/metrics.json
       hash: md5
-      md5: 66d8913b1e31b60d621565a4cc24d9d7
-      size: 95
+      md5: 1a86a5be07e2fc60e2c14104a934fdcc
+      size: 96
     - path: evaluation/plots/forecast_example.png
       hash: md5
-      md5: 4e23fe5cd7e99f3a1e1fe3a339b9b7eb
-      size: 34092
+      md5: 521189a008f82741688687fa493e45ed
+      size: 51693
