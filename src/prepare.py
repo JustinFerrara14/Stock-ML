@@ -93,11 +93,6 @@ def main() -> None:
     for name, df in data_dict.items():
         df_train, df_test = split_dataset(df, split, seed)
 
-        # Normalize numeric columns (except Date)
-        numeric_cols = ["Return", "Volume"]
-        mean = df_train[numeric_cols].mean()
-        std = df_train[numeric_cols].std()
-
         train_data[name] = df_train
         test_data[name] = df_test
 

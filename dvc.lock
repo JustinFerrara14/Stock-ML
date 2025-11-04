@@ -10,8 +10,8 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: 40cbe67ee4ae4c3a4199b2ce8cb991ac
-      size: 3683
+      md5: 7a0af626b3370095e68463fcfee534bf
+      size: 3524
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -28,21 +28,21 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: 07da697cb1eb6ce3a31ddb8e33aad5f3.dir
-      size: 1838379
+      md5: c7b973451ad6c8bfb5659bfbcc4354ac.dir
+      size: 1788502
       nfiles: 42
   train:
     cmd: python3.12 src/train.py data/prepared model
     deps:
     - path: data/prepared
       hash: md5
-      md5: 07da697cb1eb6ce3a31ddb8e33aad5f3.dir
-      size: 1838379
+      md5: c7b973451ad6c8bfb5659bfbcc4354ac.dir
+      size: 1788502
       nfiles: 42
     - path: src/train.py
       hash: md5
-      md5: 67537b859023291fc7dfe586f362732a
-      size: 6011
+      md5: fab9a660546472914db1919dd16d5491
+      size: 5741
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -52,7 +52,7 @@ stages:
         train:
           seed: 77
           lr: 0.001
-          epochs: 64
+          epochs: 32
           hidden_num_layers: 1
           hidden_size: 32
           dropout: 0.1
@@ -61,27 +61,27 @@ stages:
     outs:
     - path: model
       hash: md5
-      md5: 1b68dd73d0ec46db9ab117a67c36d4a4.dir
-      size: 152279
+      md5: bcdd58a09a623fb877dc1765a6a92e76.dir
+      size: 147335
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared
     deps:
     - path: model
       hash: md5
-      md5: 1b68dd73d0ec46db9ab117a67c36d4a4.dir
-      size: 152279
+      md5: bcdd58a09a623fb877dc1765a6a92e76.dir
+      size: 147335
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
-      md5: bdafc88cd9616c82ceb53184ad358c1a
-      size: 4741
+      md5: 9442b5dfa4458e999e16186effd3efad
+      size: 4789
     outs:
     - path: evaluation/metrics.json
       hash: md5
-      md5: 4313184be75250178b9e16695f19bf1a
-      size: 101
+      md5: 1a86a5be07e2fc60e2c14104a934fdcc
+      size: 96
     - path: evaluation/plots/forecast_example.png
       hash: md5
-      md5: 008e82f399a6be16a90d1120f8badd51
-      size: 51980
+      md5: b2957dbef461d34747f9b4b680ea5f23
+      size: 48021
