@@ -47,10 +47,10 @@ def plot_forecast_example(y_true, y_pred, X_test, sample_idx=0):
     days = np.arange(len(past_returns) + len(true_future))
     fig = plt.figure(figsize=(10, 5))
     plt.plot(days[:len(past_returns)], past_returns, label="Past 30d Returns", color="gray", linestyle="--")
+    plt.plot([len(past_returns)-1, len(past_returns)], [past_returns[-1], true_future[0]], color="gray", linestyle="--") # transition line
     plt.plot(days[len(past_returns):], true_future, marker="o", label="True Next 5d", color="green")
     plt.plot(days[len(past_returns):], pred_future, marker="x", label="Predicted Next 5d", color="orange")
 
-    plt.axvline(x=len(past_returns), color="black", linestyle=":", label="Forecast Start")
     plt.title(f"Stock Return Forecast Example (Sample {sample_idx})")
     plt.xlabel("Days (Past 30 + Next 5)")
     plt.ylabel("Return (%)")
