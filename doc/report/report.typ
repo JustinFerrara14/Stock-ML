@@ -110,6 +110,8 @@ To acquire the necessary data for stock price prediction, we used the #link("htt
 - Tesla, Inc. (TSLA)
 - Taiwan Semiconductor Manufacturing Company Ltd. (TSM)
 
+The data spans from 11/10/2020 to 11/07/2025 for each stocks, providing a comprehensive dataset for training and evaluating the machine learning models.
+
 == Data Preprocessing
 
 The preprocessing steps involved cleaning the data and transforming the data into a suitable format for modeling. We performed the following preprocessing tasks:
