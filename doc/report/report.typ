@@ -200,13 +200,27 @@ As the model is deployed on GKE, it can easily scale based on demand. Kubernetes
 
 = Monitoring
 
-TODO
+To monitor the model's performance, we choose to use only the pipeline as monitoring tool. This allows to track the model's performance over time and detect any potential issues related to data drift or model degradation, as the data used for training is updated weekly. However, this limits the monitoring capabilities compared to dedicated monitoring tools, which can monitor the model in real-time and provide more detailed insights into its performance.
 
 == Data Drift Detection
+
+To detect data drift, we will implement the training of 2 models:
+- A base model that will be trained once on the initial dataset and will not be updated.
+- A fine-tuned model that will be retrained weekly using the new data from the previous week.
+
+By comparing the performance of these two models over time, we can identify if data drift is occurring. If the fine-tuned model consistently outperforms the base model (with new data), it indicates that the underlying data distribution has changed, necessitating regular updates to maintain optimal performance.
 
 TODO
 
 == Continuous Learning
+
+To implement continuous learning, we will set up a weekly retraining schedule for the fine-tuned model. This involves:
+- Collecting new data from the previous week.
+- Preprocessing the new data to ensure it is in the correct format for training.
+- Retraining the fine-tuned model using the updated dataset.
+- Evaluating the performance of both the base and fine-tuned models on a validation set.
+
+This process will be automated using the CI/CD pipeline, ensuring that the fine-tuned model is always up-to-date with the latest data.
 
 TODO put in another section?
 
