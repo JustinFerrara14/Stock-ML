@@ -151,19 +151,52 @@ The best and worst predictions are visualized using plots to illustrate the mode
 
 = Deployment
 
+To deploy the model, we use the #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/] guidelines to set up a base environment for deployment.
+
+The model is trained locally. On every pull request, the model is retrained in a Kubernetes pod using GitHub Actions. The trained model is then containerized using Docker and deployed to a cloud environment (e.g., AWS, GCP, or Azure) for scalability and accessibility. This setup correspond to the #link("https://mlops.swiss-ai-center.ch/part-3-serve-and-deploy-the-model/chapter-37-use-a-self-hosted-runner-for-the-cicd-pipeline/")[Chapter 3.7] of the MLOps guide.
+
 TODO
 
 == CI/CD Pipeline
 
-TODO
+The CI/CD pipeline, defined in the MLOps workflow, automates the entire lifecycle of model development, testing, and deployment using GitHub Actions, DVC, CML, and BentoML. It runs on a self-hosted runner for training tasks and on GitHub-hosted runners for deployment.
+
+The pipeline is triggered automatically when:
+- Code is pushed to the main branch,
+- A pull request is opened, or
+- It is manually triggered via the GitHub Actions interface.
+
+It consists of two main jobs:
+1. Train and Report (train-and-report)
+
+  Triggered on pull requests, this job automates model training and performance reporting:
+  - Checks out the repository and sets up `Python 3.12`.
+  - Installs dependencies and authenticates with Google Cloud.
+  - Reproduces the model training pipeline using DVC (`dvc repro --pull`).
+  - Pushes updated model artifacts and metrics to the DVC remote storage.
+  - Automatically commits changes to `dvc.lock`.
+  - Generates a CML report comparing the new experiment results to the main branch, including:
+    - Parameter and metric differences (dvc params diff, dvc metrics diff),
+    - Visual comparisons of plots (training history, prediction previews, and confusion matrices).
+  - Publishes the report as a comment in the pull request for review.
+2. Publish and Deploy (publish-and-deploy)
+
+  Runs when changes are merged into the main branch. It performs the following steps:
+  - Checks out the repository and installs dependencies.
+  - Authenticates with Google Cloud and reproduces the final model pipeline using DVC.
+  - Imports and builds the BentoML model artifact.
+  - Containerizes the Bento model and pushes Docker images to the Google Container Registry.
+  - Retrieves credentials for the Google Kubernetes Engine (GKE) cluster.
+  - Updates the Kubernetes deployment manifest to reference the new image version (based on the Git SHA).
+  - Applies the updated deployment and service configuration to deploy the new model version to Kubernetes.
 
 == Infrastructure
 
-TODO
+The infrastructure for deploying the machine learning model is set up using Google Cloud Platform (GCP). We utilize Google Kubernetes Engine (GKE) to manage the containerized application, ensuring scalability and reliability. The model is containerized using Docker, allowing for consistent deployment across different environments.
 
 == Scalability
 
-TODO
+As the model is deployed on GKE, it can easily scale based on demand. Kubernetes allows us to define resource limits and auto-scaling policies to handle varying workloads. This ensures that the application remains responsive even during peak usage times.
 
 = Monitoring
 
@@ -172,6 +205,10 @@ TODO
 == Data Drift Detection
 
 TODO
+
+== Continuous Learning
+
+TODO put in another section?
 
 = Conclusion
 
