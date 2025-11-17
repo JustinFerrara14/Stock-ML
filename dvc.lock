@@ -59,18 +59,22 @@ stages:
           input_length: 30
           output_length: 5
     outs:
+    - path: evaluation/plots/loss_curve.png
+      hash: md5
+      md5: c9d860cf22213add520b9f3a276e25aa
+      size: 23217
     - path: model
       hash: md5
-      md5: 3c060f6aaf607d116a387deb1dbf3543.dir
-      size: 147863
+      md5: 4d05b54794d6806c9502983a3781abe9.dir
+      size: 147811
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared
     deps:
     - path: model
       hash: md5
-      md5: 3c060f6aaf607d116a387deb1dbf3543.dir
-      size: 147863
+      md5: 4d05b54794d6806c9502983a3781abe9.dir
+      size: 147811
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
