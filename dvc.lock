@@ -61,27 +61,43 @@ stages:
     outs:
     - path: model
       hash: md5
-      md5: 10a62f8cb6bbcdcad21b23a84707e276.dir
-      size: 147683
+      md5: 3c060f6aaf607d116a387deb1dbf3543.dir
+      size: 147863
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared
     deps:
     - path: model
       hash: md5
-      md5: 10a62f8cb6bbcdcad21b23a84707e276.dir
-      size: 147683
+      md5: 3c060f6aaf607d116a387deb1dbf3543.dir
+      size: 147863
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
-      md5: 9442b5dfa4458e999e16186effd3efad
-      size: 4789
+      md5: b3dc19c4d360e5661b2f131a468d8a3a
+      size: 4843
     outs:
     - path: evaluation/metrics.json
       hash: md5
       md5: 735a23c0f73dd4bec1fac8f2dea9b39c
       size: 96
+    - path: evaluation/plots/best_prediction_1.png
+      hash: md5
+      md5: ec5aa1d4d24de974a3baf986ad10b6d9
+      size: 59233
+    - path: evaluation/plots/best_prediction_2.png
+      hash: md5
+      md5: 53b9242bf97be4eb387d097979367e81
+      size: 67987
     - path: evaluation/plots/forecast_example.png
       hash: md5
       md5: ca4d2393cf11985c21d233a584d45a67
       size: 47774
+    - path: evaluation/plots/worst_prediction_1.png
+      hash: md5
+      md5: 13cf094e542d04191edd38c6c8c72392
+      size: 54615
+    - path: evaluation/plots/worst_prediction_2.png
+      hash: md5
+      md5: 8c4ff81593919882f7fe1c5cd9752bbe
+      size: 55352

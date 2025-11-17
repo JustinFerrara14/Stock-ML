@@ -104,16 +104,16 @@ def main() -> None:
     worst_indices = np.argsort(sample_errors)[-2:]
 
     # Create plots
-    for idx in best_indices:
+    for rank, idx in enumerate(best_indices, start=1):
         fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
         fig.suptitle(f"Best Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
-        fig.savefig(plots_folder / f"best_prediction_{idx}.png")
+        fig.savefig(plots_folder / f"best_prediction_{rank}.png")
         plt.close(fig)
 
-    for idx in worst_indices:
+    for rank, idx in enumerate(worst_indices, start=1):
         fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
         fig.suptitle(f"Worst Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
-        fig.savefig(plots_folder / f"worst_prediction_{idx}.png")
+        fig.savefig(plots_folder / f"worst_prediction_{rank}.png")
         plt.close(fig)
 
     with open(evaluation_folder / "metrics.json", "w") as f:

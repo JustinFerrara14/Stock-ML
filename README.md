@@ -17,9 +17,25 @@ dvc repro
 bentoml containerize stock_ml:latest --image-tag stock-ml:latest
 docker run --rm -p 3000:3000 stock-ml:latest
 
+gcloud container clusters create \
+    --machine-type=e2-standard-2 \
+    --num-nodes=1 \
+    --zone=$GCP_K8S_CLUSTER_ZONE \
+    $GCP_K8S_CLUSTER_NAME
+
+kubectl get namespaces
+kubectl get nodes
+
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
+
+kubectl create secret generic github-runner-pat --from-literal=token=$GH_RUNNER_PAT
 kubectl apply -f kubernetes/runner.yaml
 kubectl get pods
 kubectl delete -f kubernetes/runner.yaml
+
+# Delete cluster after use
+gcloud container clusters delete $GCP_K8S_CLUSTER_NAME --zone=$GCP_K8S_CLUSTER_ZONE
 ```
 
 
