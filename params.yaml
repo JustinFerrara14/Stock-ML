@@ -7,7 +7,9 @@ prepare:
 train:
   seed: 77
   lr: 0.001
-  epochs: 10
-  conv_size: 64
-  dense_size: 128
-  output_classes: 11
+  epochs: 4
+  hidden_num_layers: 1
+  hidden_size: 32
+  dropout: 0.1
+  input_length: 30
+  output_length: 5

@@ -1,166 +1,127 @@
 import json
 import sys
 from pathlib import Path
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import bentoml
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
-def get_training_plot(model_history: dict) -> plt.Figure:
-    """Plot the training and validation loss"""
-    epochs = range(1, len(model_history["loss"]) + 1)
+def load_test_sequences(prepared_folder: Path, input_len=30, output_len=5):
+    """Load and build sequence-based test data."""
+    def create_sequences(df):
+        features = df[["Return"]].values
+        target = df["Return"].values
+        X, y = [], []
+        for i in range(len(df) - input_len - output_len):
+            X.append(features[i:i+input_len])
+            y.append(target[i+input_len:i+input_len+output_len])
+        return np.array(X), np.array(y)
 
-    fig = plt.figure(figsize=(10, 4))
-    plt.plot(epochs, model_history["loss"], label="Training loss")
-    plt.plot(epochs, model_history["val_loss"], label="Validation loss")
-    plt.xticks(epochs)
-    plt.title("Training and validation loss")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
+    Xs, ys = [], []
+    for test_file in prepared_folder.glob("*_test.csv"):
+        df = pd.read_csv(test_file)
+        df.sort_values("Date", inplace=True)
+        X, y = create_sequences(df)
+        if len(X) > 0:
+            Xs.append(X)
+            ys.append(y)
+
+    return np.concatenate(Xs), np.concatenate(ys)
+
+def plot_forecast_example(y_true, y_pred, X_test, sample_idx=0):
+    """
+    Show previous 30 days (input) + next 5 days (true vs predicted).
+    X_test: input sequences (30-day returns)
+    y_true: true next 5-day returns
+    y_pred: predicted next 5-day returns
+    """
+    past_returns = X_test[sample_idx].flatten()
+    true_future = y_true[sample_idx]
+    pred_future = y_pred[sample_idx]
+
+    # Combine for full timeline
+    days = np.arange(len(past_returns) + len(true_future))
+    fig = plt.figure(figsize=(10, 5))
+    plt.plot(days[:len(past_returns)], past_returns, label="Past 30d Returns", color="gray", linestyle="--")
+    plt.plot([len(past_returns)-1, len(past_returns)], [past_returns[-1], true_future[0]], color="gray", linestyle="--") # transition line
+    plt.plot(days[len(past_returns):], true_future, marker="o", label="True Next 5d", color="green")
+    plt.plot(days[len(past_returns):], pred_future, marker="x", label="Predicted Next 5d", color="orange")
+
+    plt.title(f"Stock Return Forecast Example (Sample {sample_idx})")
+    plt.xlabel("Days (Past 30 + Next 5)")
+    plt.ylabel("Return (%)")
     plt.legend()
     plt.grid(True)
-
     return fig
-
-
-def get_pred_preview_plot(
-    model: tf.keras.Model, ds_test: tf.data.Dataset, labels: List[str]
-) -> plt.Figure:
-    """Plot a preview of the predictions"""
-    fig = plt.figure(figsize=(10, 5), tight_layout=True)
-    for images, label_idxs in ds_test.take(1):
-        preds = model.predict(images)
-        for i in range(10):
-            plt.subplot(2, 5, i + 1)
-            img = (images[i].numpy() * 255).astype("uint8")
-            # Convert image to rgb if grayscale
-            if img.shape[-1] == 1:
-                img = np.squeeze(img, axis=-1)
-                img = np.stack((img,) * 3, axis=-1)
-            true_label = labels[label_idxs[i].numpy()]
-            pred_label = labels[np.argmax(preds[i])]
-            # Add red border if the prediction is wrong else add green border
-            img = np.pad(img, pad_width=((1, 1), (1, 1), (0, 0)))
-            if true_label != pred_label:
-                img[0, :, 0] = 255  # Top border
-                img[-1, :, 0] = 255  # Bottom border
-                img[:, 0, 0] = 255  # Left border
-                img[:, -1, 0] = 255  # Right border
-            else:
-                img[0, :, 1] = 255
-                img[-1, :, 1] = 255
-                img[:, 0, 1] = 255
-                img[:, -1, 1] = 255
-
-            plt.imshow(img)
-            plt.title(f"True: {true_label}\n" f"Pred: {pred_label}")
-            plt.axis("off")
-
-    return fig
-
-
-def get_confusion_matrix_plot(
-    model: tf.keras.Model, ds_test: tf.data.Dataset, labels: List[str]
-) -> plt.Figure:
-    """Plot the confusion matrix"""
-    fig = plt.figure(figsize=(6, 6), tight_layout=True)
-    preds = model.predict(ds_test)
-
-    conf_matrix = tf.math.confusion_matrix(
-        labels=tf.concat([y for _, y in ds_test], axis=0),
-        predictions=tf.argmax(preds, axis=1),
-        num_classes=len(labels),
-    )
-
-    # Plot the confusion matrix
-    conf_matrix = conf_matrix / tf.reduce_sum(conf_matrix, axis=1)
-    plt.imshow(conf_matrix, cmap="Blues")
-
-    # Plot cell values
-    for i in range(len(labels)):
-        for j in range(len(labels)):
-            value = conf_matrix[i, j].numpy()
-            if value == 0:
-                color = "lightgray"
-            elif value > 0.5:
-                color = "white"
-            else:
-                color = "black"
-            plt.text(
-                j,
-                i,
-                f"{value:.2f}",
-                ha="center",
-                va="center",
-                color=color,
-                fontsize=8,
-            )
-
-    plt.colorbar()
-    plt.xticks(range(len(labels)), labels, rotation=90)
-    plt.yticks(range(len(labels)), labels)
-    plt.xlabel("Predicted label")
-    plt.ylabel("True label")
-    plt.title("Confusion matrix")
-
-    return fig
-
 
 def main() -> None:
     if len(sys.argv) != 3:
         print("Arguments error. Usage:\n")
-        print("\tpython3 evaluate.py <model-folder> <prepared-dataset-folder>\n")
+        print("\tpython3 evaluate_financial_model.py <model-folder> <prepared-dataset-folder>\n")
         exit(1)
 
     model_folder = Path(sys.argv[1])
     prepared_dataset_folder = Path(sys.argv[2])
     evaluation_folder = Path("evaluation")
-    plots_folder = Path("plots")
+    plots_folder = evaluation_folder / "plots"
 
-    # Create folders
-    (evaluation_folder / plots_folder).mkdir(parents=True, exist_ok=True)
+    plots_folder.mkdir(parents=True, exist_ok=True)
 
-    # Load files
-    ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
-    labels = None
-    with open(prepared_dataset_folder / "labels.json") as f:
-        labels = json.load(f)
+    X_test, y_test = load_test_sequences(prepared_dataset_folder)
+    print(f"Loaded {len(X_test)} test sequences")
 
-    # Import the model to the model store from a local model folder
+    model_name = "financial_forecast_model_seq"
     try:
-        bentoml.models.import_model(f"{model_folder}/celestial_bodies_classifier_model.bentomodel")
+        bentoml.models.import_model(f"{model_folder}/{model_name}.bentomodel")
     except bentoml.exceptions.BentoMLException:
-        print("Model already exists in the model store - skipping import.")
+        print("Model already exists in the BentoML store, skipping import.")
 
-    # Load model
-    model = bentoml.keras.load_model("celestial_bodies_classifier_model")
+    model = bentoml.keras.load_model(model_name)
     model_history = np.load(model_folder / "history.npy", allow_pickle=True).item()
 
-    # Log metrics
-    val_loss, val_acc = model.evaluate(ds_test)
-    print(f"Validation loss: {val_loss:.2f}")
-    print(f"Validation accuracy: {val_acc * 100:.2f}%")
+    # Predict on test set
+    y_pred = model.predict(X_test)
+
+    # Compute metrics with price scale
+    mae = mean_absolute_error(y_test.flatten(), y_pred.flatten())
+    mse = mean_squared_error(y_test.flatten(), y_pred.flatten())
+    rmse = np.sqrt(mse)
+    r2 = r2_score(y_test.flatten(), y_pred.flatten())
+
+    print(f"Validation MAE:  {mae:.4f}")
+    print(f"Validation RMSE: {rmse:.4f}")
+    print(f"R² Score:        {r2:.4f}")
+
+    # Compute per-sample RMSE
+    sample_errors = np.sqrt(np.mean((y_pred - y_test) ** 2, axis=1))
+
+    # Get indices of 2 best and 2 worst predictions
+    best_indices = np.argsort(sample_errors)[:2]
+    worst_indices = np.argsort(sample_errors)[-2:]
+
+    # Create plots
+    for rank, idx in enumerate(best_indices, start=1):
+        fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
+        fig.suptitle(f"Best Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
+        fig.savefig(plots_folder / f"best_prediction_{rank}.png")
+        plt.close(fig)
+
+    for rank, idx in enumerate(worst_indices, start=1):
+        fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
+        fig.suptitle(f"Worst Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
+        fig.savefig(plots_folder / f"worst_prediction_{rank}.png")
+        plt.close(fig)
+
     with open(evaluation_folder / "metrics.json", "w") as f:
-        json.dump({"val_loss": val_loss, "val_acc": val_acc}, f)
+        json.dump({"mae": mae, "rmse": rmse, "r2": r2}, f, indent=4)
 
-    # Save training history plot
-    fig = get_training_plot(model_history)
-    fig.savefig(evaluation_folder / plots_folder / "training_history.png")
+    plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx).savefig(plots_folder / "forecast_example.png")
 
-    # Save predictions preview plot
-    fig = get_pred_preview_plot(model, ds_test, labels)
-    fig.savefig(evaluation_folder / plots_folder / "pred_preview.png")
-
-    # Save confusion matrix plot
-    fig = get_confusion_matrix_plot(model, ds_test, labels)
-    fig.savefig(evaluation_folder / plots_folder / "confusion_matrix.png")
-
-    print(
-        f"\nEvaluation metrics and plot files saved at {evaluation_folder.absolute()}"
-    )
+    print(f"\nEvaluation results saved in {evaluation_folder.absolute()}")
 
 
 if __name__ == "__main__":

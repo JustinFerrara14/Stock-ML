@@ -1,115 +1,163 @@
 import json
 import sys
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Dict
 
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import yaml
 import bentoml
-from PIL.Image import Image
 
 from utils.seed import set_seed
 
 
-def get_model(
-    image_shape: Tuple[int, int, int],
-    conv_size: int,
-    dense_size: int,
-    output_classes: int,
-) -> tf.keras.Model:
-    """Create a simple CNN model"""
-    model = tf.keras.models.Sequential(
-        [
-            tf.keras.layers.Conv2D(
-                conv_size, (3, 3), activation="relu", input_shape=image_shape
-            ),
-            tf.keras.layers.MaxPooling2D((3, 3)),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(dense_size, activation="relu"),
-            tf.keras.layers.Dense(output_classes),
-        ]
-    )
+def create_sequences(df: pd.DataFrame, input_len, output_len):
+    """Create sliding windows of input_len days of % returns to predict next output_len days."""
+    features = df[["Return"]].values
+    target = df["Return"].values
+    X, y = [], []
+
+    for i in range(len(df) - input_len - output_len):
+        X.append(features[i:i+input_len])
+        y.append(target[i+input_len:i+input_len+output_len])
+    return np.array(X), np.array(y)
+
+
+def load_sequence_data(prepared_folder: Path, input_len, output_len) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Load all companies' CSVs and create sequence-based train/test datasets."""
+    X_train_list, y_train_list, X_test_list, y_test_list = [], [], [], []
+
+    for train_file in prepared_folder.glob("*_train.csv"):
+        test_file = prepared_folder / train_file.name.replace("_train.csv", "_test.csv")
+
+        df_train = pd.read_csv(train_file)
+        df_test = pd.read_csv(test_file)
+
+        # Sort by date
+        df_train.sort_values("Date", inplace=True)
+        df_test.sort_values("Date", inplace=True)
+
+        # Create input sequences (X) and targets (y)
+        X_train, y_train = create_sequences(df_train, input_len, output_len)
+        X_test, y_test = create_sequences(df_test, input_len, output_len)
+
+        if len(X_train) > 0:
+            X_train_list.append(X_train)
+            y_train_list.append(y_train)
+        if len(X_test) > 0:
+            X_test_list.append(X_test)
+            y_test_list.append(y_test)
+
+    # Combine across companies
+    X_train = np.concatenate(X_train_list)
+    y_train = np.concatenate(y_train_list)
+    X_test = np.concatenate(X_test_list)
+    y_test = np.concatenate(y_test_list)
+
+    return X_train, y_train, X_test, y_test
+
+
+def get_sequence_model(input_len: int, input_dim: int, output_len: int, hidden_num_layers: int, hidden_size: int, dropout: float) -> tf.keras.Model:
+    """LSTM model for next-5-day price prediction."""
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Input(shape=(input_len, input_dim)))
+    for _ in range(hidden_num_layers):
+        model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=True, dropout=dropout))
+    model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=False, dropout=dropout))
+    model.add(tf.keras.layers.Dense(output_len))  # predict next x days
+
     return model
 
 
 def main() -> None:
     if len(sys.argv) != 3:
         print("Arguments error. Usage:\n")
-        print("\tpython3 train.py <prepared-dataset-folder> <model-folder>\n")
+        print("\tpython3 train_financial_model.py <prepared-dataset-folder> <model-folder>\n")
         exit(1)
 
     # Load parameters
-    prepare_params = yaml.safe_load(open("params.yaml"))["prepare"]
-    train_params = yaml.safe_load(open("params.yaml"))["train"]
+    params = yaml.safe_load(open("params.yaml"))
+    train_params = params["train"]
 
     prepared_dataset_folder = Path(sys.argv[1])
     model_folder = Path(sys.argv[2])
 
-    image_size = prepare_params["image_size"]
-    grayscale = prepare_params["grayscale"]
-    image_shape = (*image_size, 1 if grayscale else 3)
-
     seed = train_params["seed"]
     lr = train_params["lr"]
     epochs = train_params["epochs"]
-    conv_size = train_params["conv_size"]
-    dense_size = train_params["dense_size"]
-    output_classes = train_params["output_classes"]
+    hidden_num_layers = train_params.get("hidden_num_layers", 2)
+    hidden_size = train_params["hidden_size"]
+    dropout = train_params.get("dropout")
+    input_len = train_params["input_length"]
+    output_len = train_params["output_length"]
 
-    # Set seed for reproducibility
+    # Set reproducibility
     set_seed(seed)
 
     # Load data
-    ds_train = tf.data.Dataset.load(str(prepared_dataset_folder / "train"))
-    ds_test = tf.data.Dataset.load(str(prepared_dataset_folder / "test"))
+    X_train, y_train, X_test, y_test = load_sequence_data(prepared_dataset_folder, input_len, output_len)
+    print(f"\nLoaded {len(X_train)} train sequences, {len(X_test)} test sequences\n")
 
-    labels = None
-    with open(prepared_dataset_folder / "labels.json") as f:
-        labels = json.load(f)
+    # Build model
+    model = get_sequence_model(
+        input_len=X_train.shape[1],
+        input_dim=X_train.shape[2],
+        output_len=y_train.shape[1],
+        hidden_num_layers=hidden_num_layers,
+        hidden_size=hidden_size,
+        dropout=dropout,
+    )
 
-    # Define the model
-    model = get_model(image_shape, conv_size, dense_size, output_classes)
     model.compile(
         optimizer=tf.keras.optimizers.Adam(lr),
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
+        loss="mse",
+        metrics=["mae"]
     )
+
     model.summary()
 
-    # Train the model
-    model.fit(
-        ds_train,
+    # Train model
+    history = model.fit(
+        X_train, y_train,
+        validation_data=(X_test, y_test),
         epochs=epochs,
-        validation_data=ds_test,
+        batch_size=32,
+        verbose=1
     )
 
-    # Save the model
+    # Plot training vs validation loss
+    evaluation_folder = Path("evaluation")
+    plots_folder = evaluation_folder / "plots"
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(history.history["loss"], label="Train Loss")
+    plt.plot(history.history["val_loss"], label="Validation Loss")
+    plt.title("Training vs Validation Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("MSE Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(plots_folder / "loss_curve.png")
+    plt.close()
+
+
+    # Save model
     model_folder.mkdir(parents=True, exist_ok=True)
 
-    def preprocess(x: Image):
-        # convert PIL image to tensor
-        x = x.convert('L' if grayscale else 'RGB')
-        x = x.resize(image_size)
-        x = np.array(x)
-        x = x / 255.0
-        # add batch dimension
-        x = np.expand_dims(x, axis=0)
-        return x
+    def preprocess(x: Dict[str, list]):
+        """Preprocess last 30 days of input (dict with lists) for prediction."""
+        arr = np.array([[v["Open"], v["High"], v["Low"], v["Volume"]] for v in x[-30:]])
+        return np.expand_dims(arr, axis=0).astype(np.float32)
 
-    def postprocess(x: Image):
-        return {
-            "prediction": labels[tf.argmax(x, axis=-1).numpy()[0]],
-            "probabilities": {
-                labels[i]: prob
-                for i, prob in enumerate(tf.nn.softmax(x).numpy()[0].tolist())
-            },
-        }
+    def postprocess(pred):
+        """Convert model output (5-day forecast) to JSON."""
+        return {"predicted_return_next5": pred[0].tolist()}
 
-    # Save the model using BentoML to its model store
-    # https://docs.bentoml.com/en/latest/reference/frameworks/keras.html#bentoml.keras.save_model
     bentoml.keras.save_model(
-        "celestial_bodies_classifier_model",
+        "financial_forecast_model_seq",
         model,
         include_optimizer=True,
         custom_objects={
@@ -118,15 +166,12 @@ def main() -> None:
         }
     )
 
-    # Export the model from the model store to the local model folder
     bentoml.models.export_model(
-        "celestial_bodies_classifier_model:latest",
-        f"{model_folder}/celestial_bodies_classifier_model.bentomodel",
+        "financial_forecast_model_seq:latest",
+        f"{model_folder}/financial_forecast_model_seq.bentomodel",
     )
 
-    # Save the model history
-    np.save(model_folder / "history.npy", model.history.history)
-
+    np.save(model_folder / "history.npy", history.history)
     print(f"\nModel saved at {model_folder.absolute()}")
 
 

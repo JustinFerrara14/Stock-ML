@@ -19,6 +19,8 @@ stages:
     - train
     outs:
     - model
+    plots:
+    - evaluation/plots/loss_curve.png
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared
     deps:
@@ -27,6 +29,8 @@ stages:
     metrics:
     - evaluation/metrics.json
     plots:
-    - evaluation/plots/confusion_matrix.png
-    - evaluation/plots/pred_preview.png
-    - evaluation/plots/training_history.png
+    - evaluation/plots/forecast_example.png
+    - evaluation/plots/best_prediction_1.png
+    - evaluation/plots/best_prediction_2.png
+    - evaluation/plots/worst_prediction_1.png
+    - evaluation/plots/worst_prediction_2.png
