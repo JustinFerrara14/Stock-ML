@@ -80,23 +80,37 @@ jobs:
           # Create training history plot
           echo "### Training History" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_training_history.png "Training History")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve "Training History")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_training_history.png "Training History")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve.png "Training History")' >> report.md
 
-          # Create predictions preview
-          echo "### Predictions Preview" >> report.md
+          # Create best 1 predictions preview
+          echo "### Best Prediction 1 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_pred_preview.png "Predictions Preview")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_pred_preview.png "Predictions Preview")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview")' >> report.md
 
-          # Create confusion matrix
-          echo "### Confusion Matrix" >> report.md
+          # Create best 2 predictions preview
+          echo "### Best Prediction 2 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_confusion_matrix.png "Confusion Matrix")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_confusion_matrix.png "Confusion Matrix")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview")' >> report.md
+
+          # Create worst 1 predictions preview
+          echo "### Worst Prediction 1 Preview" >> report.md
+          echo "#### main" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview")' >> report.md
+          echo "#### workspace" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview")' >> report.md
+
+          # Create worst 2 predictions preview
+          echo "### Worst Prediction 2 Preview" >> report.md
+          echo "#### main" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2.png "Worst Predictions 2 Preview")' >> report.md
+          echo "#### workspace" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2.png "Worst Prediction 2 Preview")' >> report.md
 
           # Publish the CML report
           cml comment update --target=pr --publish report.md
