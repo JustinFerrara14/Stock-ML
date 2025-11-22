@@ -6,26 +6,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+import yaml
 import bentoml
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
+from sklearn.preprocessing import StandardScaler
+import joblib
 
-def load_test_sequences(prepared_folder: Path, input_len=30, output_len=5):
-    """Load and build sequence-based test data."""
-    def create_sequences(df):
-        features = df[["Return"]].values
-        target = df["Return"].values
-        X, y = [], []
-        for i in range(len(df) - input_len - output_len):
-            X.append(features[i:i+input_len])
-            y.append(target[i+input_len:i+input_len+output_len])
-        return np.array(X), np.array(y)
+"""Load and build sequence-based test data."""
+def create_sequences(df, input_len, output_len):
+    feature_cols = ["Return", "SMA_5", "SMA_10", "EMA_5", "High_Low_Spread", "Open_Close_Ratio", "Volume_Change"]
+    features = df[feature_cols].values
+    target = df["Return"].values
+    X, y = [], []
+    for i in range(len(df) - input_len - output_len):
+        X.append(features[i:i+input_len])
+        y.append(target[i+input_len:i+input_len+output_len])
+    return np.array(X), np.array(y)
+
+def load_test_sequences(prepared_folder: Path, input_len, output_len):
 
     Xs, ys = [], []
     for test_file in prepared_folder.glob("*_test.csv"):
         df = pd.read_csv(test_file)
         df.sort_values("Date", inplace=True)
-        X, y = create_sequences(df)
+
+        scaler_file = test_file.with_name(test_file.name.replace("_test.csv", "_scaler.pkl"))
+        scaler = joblib.load(scaler_file)
+        feature_cols = ["Return", "SMA_5", "SMA_10", "EMA_5", "High_Low_Spread", "Open_Close_Ratio", "Volume_Change"]
+        df[feature_cols] = scaler.transform(df[feature_cols])
+
+        X, y = create_sequences(df, input_len, output_len)
         if len(X) > 0:
             Xs.append(X)
             ys.append(y)
@@ -39,7 +50,7 @@ def plot_forecast_example(y_true, y_pred, X_test, sample_idx=0):
     y_true: true next 5-day returns
     y_pred: predicted next 5-day returns
     """
-    past_returns = X_test[sample_idx].flatten()
+    past_returns = X_test[sample_idx][:, 0]   # feature 0 = Return
     true_future = y_true[sample_idx]
     pred_future = y_pred[sample_idx]
 
@@ -47,9 +58,11 @@ def plot_forecast_example(y_true, y_pred, X_test, sample_idx=0):
     days = np.arange(len(past_returns) + len(true_future))
     fig = plt.figure(figsize=(10, 5))
     plt.plot(days[:len(past_returns)], past_returns, label="Past 30d Returns", color="gray", linestyle="--")
-    plt.plot([len(past_returns)-1, len(past_returns)], [past_returns[-1], true_future[0]], color="gray", linestyle="--") # transition line
+    # plt.plot([len(past_returns)-1, len(past_returns)], [past_returns[-1], true_future[0]], color="gray", linestyle="--") # transition line
     plt.plot(days[len(past_returns):], true_future, marker="o", label="True Next 5d", color="green")
+    plt.plot([len(past_returns)-1, len(past_returns)], [past_returns[-1], true_future[0]], color="green", linestyle="--") # transition line
     plt.plot(days[len(past_returns):], pred_future, marker="x", label="Predicted Next 5d", color="orange")
+    plt.plot([len(past_returns)-1, len(past_returns)], [past_returns[-1], pred_future[0]], color="orange", linestyle="--") # transition line
 
     plt.title(f"Stock Return Forecast Example (Sample {sample_idx})")
     plt.xlabel("Days (Past 30 + Next 5)")
@@ -71,7 +84,14 @@ def main() -> None:
 
     plots_folder.mkdir(parents=True, exist_ok=True)
 
-    X_test, y_test = load_test_sequences(prepared_dataset_folder)
+    # Load parameters
+    params = yaml.safe_load(open("params.yaml"))
+    train_params = params["train"]
+
+    input_len = train_params["input_length"]
+    output_len = train_params["output_length"]
+
+    X_test, y_test = load_test_sequences(prepared_dataset_folder, input_len, output_len)
     print(f"Loaded {len(X_test)} test sequences")
 
     model_name = "financial_forecast_model_seq"

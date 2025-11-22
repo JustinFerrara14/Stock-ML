@@ -15,7 +15,8 @@ from utils.seed import set_seed
 
 def create_sequences(df: pd.DataFrame, input_len, output_len):
     """Create sliding windows of input_len days of % returns to predict next output_len days."""
-    features = df[["Return"]].values
+    feature_cols = ["Return", "SMA_5", "SMA_10", "EMA_5", "High_Low_Spread", "Open_Close_Ratio", "Volume_Change"]
+    features = df[feature_cols].values
     target = df["Return"].values
     X, y = [], []
 
@@ -56,6 +57,12 @@ def load_sequence_data(prepared_folder: Path, input_len, output_len) -> Tuple[np
     X_test = np.concatenate(X_test_list)
     y_test = np.concatenate(y_test_list)
 
+    # Shuffle training data
+    train_indices = np.arange(len(X_train))
+    np.random.shuffle(train_indices)
+    X_train = X_train[train_indices]
+    y_train = y_train[train_indices]
+
     return X_train, y_train, X_test, y_test
 
 
@@ -63,9 +70,15 @@ def get_sequence_model(input_len: int, input_dim: int, output_len: int, hidden_n
     """LSTM model for next-5-day price prediction."""
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Input(shape=(input_len, input_dim)))
-    for _ in range(hidden_num_layers):
-        model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=True, dropout=dropout))
-    model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=False, dropout=dropout))
+
+    for _ in range(hidden_num_layers - 1):
+        model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=True))
+        if dropout:
+            model.add(tf.keras.layers.Dropout(dropout))
+    model.add(tf.keras.layers.LSTM(hidden_size, return_sequences=False))
+    if dropout:
+        model.add(tf.keras.layers.Dropout(dropout))
+
     model.add(tf.keras.layers.Dense(output_len))  # predict next x days
 
     return model
@@ -149,7 +162,8 @@ def main() -> None:
 
     def preprocess(x: Dict[str, list]):
         """Preprocess last 30 days of input (dict with lists) for prediction."""
-        arr = np.array([[v["Open"], v["High"], v["Low"], v["Volume"]] for v in x[-30:]])
+        # arr = np.array([[v["Open"], v["High"], v["Low"], v["Volume"]] for v in x[-30:]])
+        arr = np.array([v["Return"] for v in x[-input_len:]]).reshape(-1, 1)
         return np.expand_dims(arr, axis=0).astype(np.float32)
 
     def postprocess(pred):
