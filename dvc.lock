@@ -41,8 +41,8 @@ stages:
       nfiles: 62
     - path: src/train.py
       hash: md5
-      md5: 766167357b9d8399f25935d3ab1dcf81
-      size: 6236
+      md5: f521634d036a205b9b9b903609c277c1
+      size: 6336
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -52,7 +52,7 @@ stages:
         train:
           seed: 77
           lr: 0.001
-          epochs: 20
+          epochs: 10
           hidden_num_layers: 1
           hidden_size: 32
           dropout: 0.2
@@ -61,47 +61,47 @@ stages:
     outs:
     - path: evaluation/plots/loss_curve.png
       hash: md5
-      md5: 2c6cb2f8fcbabb224d444f0d5135af37
-      size: 29906
+      md5: 38ffc56159dbfcbf07616faa45dba1eb
+      size: 22745
     - path: model
       hash: md5
-      md5: cf0c122555d9c9e87439c82fc8b50276.dir
-      size: 63351
+      md5: d631dbfcf9bec4808272e12832492e5e.dir
+      size: 63675
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared
     deps:
     - path: model
       hash: md5
-      md5: cf0c122555d9c9e87439c82fc8b50276.dir
-      size: 63351
+      md5: d631dbfcf9bec4808272e12832492e5e.dir
+      size: 63675
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
-      md5: cd84b677e1651a3eeedbe43d6c8cfe91
-      size: 5883
+      md5: 9076e0a9d5eae5efea0be6e2c0b69b1e
+      size: 5863
     outs:
     - path: evaluation/metrics.json
       hash: md5
-      md5: 52a2020f8a9882b41c875702383eb3ae
+      md5: e71f66d1d77cf0551cc87eb01e624d33
       size: 96
     - path: evaluation/plots/best_prediction_1.png
       hash: md5
-      md5: b6945fbabe9f1c2bd2ab9498d39ca1c7
-      size: 72865
+      md5: dfc3b0db9557cdacdbf0b02099672376
+      size: 67657
     - path: evaluation/plots/best_prediction_2.png
       hash: md5
-      md5: cdeb231f5e7a36e6bdc50f58bf0eda2d
-      size: 80936
+      md5: 52a529c30009082c2d0af4e20fdd63a5
+      size: 67862
     - path: evaluation/plots/forecast_example.png
       hash: md5
-      md5: a2374c2b7780fb0e5d6fedf1ff882ef1
-      size: 52820
+      md5: 2e982f43139cce31bc2637e541c95061
+      size: 53491
     - path: evaluation/plots/worst_prediction_1.png
       hash: md5
-      md5: 35080b73c7a527fa411b37a280352650
-      size: 59409
+      md5: 8f8fd4d9903242d10fb330bc68ea8213
+      size: 60441
     - path: evaluation/plots/worst_prediction_2.png
       hash: md5
-      md5: cdb2a98afcfb4cc58bad6b64b0c8ee4d
-      size: 60172
+      md5: 5ac2eeeb2c15ed5c67f6c0040add8ae3
+      size: 60829

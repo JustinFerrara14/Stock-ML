@@ -94,7 +94,7 @@ def main() -> None:
     X_test, y_test = load_test_sequences(prepared_dataset_folder, input_len, output_len)
     print(f"Loaded {len(X_test)} test sequences")
 
-    model_name = "financial_forecast_model_seq"
+    model_name = "stock-ml"
     try:
         bentoml.models.import_model(f"{model_folder}/{model_name}.bentomodel")
     except bentoml.exceptions.BentoMLException:

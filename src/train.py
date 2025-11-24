@@ -162,16 +162,17 @@ def main() -> None:
 
     def preprocess(x: Dict[str, list]):
         """Preprocess last 30 days of input (dict with lists) for prediction."""
-        # arr = np.array([[v["Open"], v["High"], v["Low"], v["Volume"]] for v in x[-30:]])
-        arr = np.array([v["Return"] for v in x[-input_len:]]).reshape(-1, 1)
+        feature_cols = ["Return", "SMA_5", "SMA_10", "EMA_5", "High_Low_Spread", "Open_Close_Ratio", "Volume_Change"]
+        arr = np.array([[v[col] for col in feature_cols] for v in x[-input_len:]])
         return np.expand_dims(arr, axis=0).astype(np.float32)
 
     def postprocess(pred):
         """Convert model output (5-day forecast) to JSON."""
         return {"predicted_return_next5": pred[0].tolist()}
 
+    model_name = "stock-ml"
     bentoml.keras.save_model(
-        "financial_forecast_model_seq",
+        model_name,
         model,
         include_optimizer=True,
         custom_objects={
@@ -181,8 +182,8 @@ def main() -> None:
     )
 
     bentoml.models.export_model(
-        "financial_forecast_model_seq:latest",
-        f"{model_folder}/financial_forecast_model_seq.bentomodel",
+        f"{model_name}:latest",
+        f"{model_folder}/{model_name}.bentomodel"
     )
 
     np.save(model_folder / "history.npy", history.history)
