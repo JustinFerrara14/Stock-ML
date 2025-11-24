@@ -6,10 +6,10 @@ import bentoml
 import json
 import numpy as np
 
-@bentoml.service(name="financial_forecast_service")
+@bentoml.service(name="stock-ml")
 class FinancialForecastService:
     # Load the trained BentoML model
-    bento_model = bentoml.keras.get("financial_forecast_model_seq")
+    bento_model = bentoml.models.get("stock-ml")
 
     def __init__(self) -> None:
         # Custom preprocess/postprocess functions from the saved model
@@ -25,27 +25,28 @@ class FinancialForecastService:
                 ContentType("application/json")
             ] = Field(
                 description=(
-                    "Last 30 days of stock data. Each dict must contain "
-                    "'Open', 'High', 'Low', 'Volume'."
+                    "Last 60 days of stock data. Each dict must contain "
+                    "'Return', 'SMA_5', 'SMA_10', 'EMA_5', 'High_Low_Spread', 'Open_Close_Ratio', 'Volume_Change'."
                 )
             ),
     ) -> Annotated[Dict[str, list], ContentType("application/json")]:
         """
         Example input:
-        [
-            {"Open": 260.1, "High": 264.0, "Low": 259.0, "Volume": 38200000},
-            ...
-            # 30 days
-        ]
+        {
+            "stock_data": [
+                {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
+                ...
+            ]
+        }
         """
 
         try:
-            if len(stock_data) != 30:
-                raise ValueError("Input data must contain exactly 30 days of stock data, actually got "
-                                 f"{len(stock_data)} days.")
+            input_len = 60  # must match training input length
+            if len(stock_data) != input_len:
+                raise ValueError(f"Input data must contain exactly {input_len} days of stock data, actually got {len(stock_data)} days.")
 
             # Preprocess input to model-ready shape
-            X = self.preprocess(stock_data)  # shape: (1, 30, 4)
+            X = self.preprocess(stock_data)  # shape: (1, input_len, 4)
 
             # Make prediction
             y_pred = self.model.predict(X)
