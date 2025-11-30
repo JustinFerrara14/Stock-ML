@@ -37,7 +37,7 @@ jobs:
         with:
           credentials_json: '${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}'
       - name: Train model
-        run: dvc repro --pull
+        run: dvc repro --pull drift_analysis
       - name: Push the outcomes to DVC remote storage
         run: dvc push
       - name: Commit changes in dvc.lock
@@ -70,6 +70,24 @@ jobs:
           # Compare metrics to main branch
           echo "## Metrics workflow vs. main" >> report.md
           dvc metrics diff main --md >> report.md
+
+          # Data drift summary
+          echo "## Data Drift Summary (data/prepared vs data/prepared_30_11_2025)" >> report.md
+          if [ -f "evaluation/drift_summary.json" ]; then
+            DRIFT_DATASET=$(python -c "import json; s=json.load(open('evaluation/drift_summary.json')); print(s.get('dataset_drift'))")
+            DRIFT_SHARE=$(python -c "import json; s=json.load(open('evaluation/drift_summary.json')); print(s.get('share_of_drifted_columns'))")
+            DRIFT_COLS=$(python -c "import json; s=json.load(open('evaluation/drift_summary.json')); print(s.get('number_of_columns'))")
+
+            echo "" >> report.md
+            echo "| Metric | Value |" >> report.md
+            echo "|--------|-------|" >> report.md
+            echo "| Dataset drift detected | $DRIFT_DATASET |" >> report.md
+            echo "| Share of drifted columns | $DRIFT_SHARE |" >> report.md
+            echo "| Number of columns | $DRIFT_COLS |" >> report.md
+          else
+            echo "" >> report.md
+            echo "_Data drift summary not found (evaluation/drift_summary.json)._" >> report.md
+          fi
 
           # Compare plots (images) to main branch
           dvc plots diff main

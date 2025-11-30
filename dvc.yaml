@@ -69,3 +69,13 @@ stages:
     - evaluation/plots/best_prediction_2_30_11_2025.png
     - evaluation/plots/worst_prediction_1_30_11_2025.png
     - evaluation/plots/worst_prediction_2_30_11_2025.png
+  drift_analysis:
+    cmd: python3.12 src/drift_analysis.py data/prepared data/prepared_30_11_2025 evaluation/drift_report.html evaluation/drift_summary.json
+    deps:
+    - data/prepared
+    - data/prepared_30_11_2025
+    - src/drift_analysis.py
+    metrics:
+    - evaluation/drift_summary.json
+    plots:
+    - evaluation/drift_report.html
