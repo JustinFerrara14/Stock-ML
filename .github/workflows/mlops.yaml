@@ -80,37 +80,75 @@ jobs:
           # Create training history plot
           echo "### Training History" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve "Training History")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve "Training History (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve_30_11_2025 "Training History (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve.png "Training History")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve.png "Training History (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve_30_11_2025.png "Training History (Dataset 2)")' >> report.md
 
           # Create best 1 predictions preview
           echo "### Best Prediction 1 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1_30_11_2025.png "Best Prediction 1 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1_30_11_2025.png "Best Prediction 1 Preview (Dataset 2)")' >> report.md
 
           # Create best 2 predictions preview
           echo "### Best Prediction 2 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2_30_11_2025.png "Best Prediction 2 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2_30_11_2025.png "Best Prediction 2 Preview (Dataset 2)")' >> report.md
 
           # Create worst 1 predictions preview
           echo "### Worst Prediction 1 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1_30_11_2025.png "Worst Prediction 1 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1_30_11_2025.png "Worst Prediction 1 Preview (Dataset 2)")' >> report.md
 
           # Create worst 2 predictions preview
           echo "### Worst Prediction 2 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2.png "Worst Predictions 2 Preview")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2.png "Worst Predictions 2 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2_30_11_2025.png "Worst Predictions 2 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2.png "Worst Prediction 2 Preview")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2.png "Worst Prediction 2 Preview (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2_30_11_2025.png "Worst Prediction 2 Preview (Dataset 2)")' >> report.md
+
+          # Model-level comparison between the two datasets on this branch
+          echo "## Model comparison (Dataset 1 vs Dataset 2)" >> report.md
+
+          METRICS_1="evaluation/metrics.json"
+          METRICS_2="evaluation/metrics_30_11_2025.json"
+
+          if [ -f "$METRICS_1" ] && [ -f "$METRICS_2" ]; then
+            MAE1=$(python -c "import json;print(json.load(open('$METRICS_1'))['mae'])")
+            RMSE1=$(python -c "import json;print(json.load(open('$METRICS_1'))['rmse'])")
+            R21=$(python -c "import json;print(json.load(open('$METRICS_1'))['r2'])")
+
+            MAE2=$(python -c "import json;print(json.load(open('$METRICS_2'))['mae'])")
+            RMSE2=$(python -c "import json;print(json.load(open('$METRICS_2'))['rmse'])")
+            R22=$(python -c "import json;print(json.load(open('$METRICS_2'))['r2'])")
+
+            echo "" >> report.md
+            echo "| Model (dataset)                  | MAE | RMSE | R² |" >> report.md
+            echo "|----------------------------------|-----|------|----|" >> report.md
+            echo "| Dataset 1 (data/prepared)        | $MAE1 | $RMSE1 | $R21 |" >> report.md
+            echo "| Dataset 2 (data/prepared_30_11_2025) | $MAE2 | $RMSE2 | $R22 |" >> report.md
+
+            echo "" >> report.md
+            echo "Lower MAE/RMSE and higher R² indicate a better model." >> report.md
+          else
+            echo "" >> report.md
+            echo "_Model comparison skipped: metrics files not found (expected $METRICS_1 and $METRICS_2)._" >> report.md
+          fi
 
           # Publish the CML report
           cml comment update --target=pr --publish report.md
