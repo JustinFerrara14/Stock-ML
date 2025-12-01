@@ -95,7 +95,11 @@ def main() -> None:
     seed = prepare_params["seed"]
     split = prepare_params["split"]
 
-    # Optional test mode to artificially reduce the newer dataset
+    # Optional test mode to create an artificial train/test time split
+    # between the baseline dataset ("raw") and the newer candidate dataset
+    # ("raw_candidate"). The cutoff date is defined by test_year/test_month.
+    # - Baseline (non-candidate) data will use dates strictly BEFORE this cutoff.
+    # - Candidate data will use dates FROM this cutoff onward.
     test_mode = prepare_params.get("test_mode", False)
     test_month = prepare_params.get("test_month")
     test_year = prepare_params.get("test_year")
@@ -114,15 +118,27 @@ def main() -> None:
         df = add_return_column(df)
         df = add_features(df)
 
-        if test_mode and is_new_dataset and test_month is not None and test_year is not None:
+        if test_mode and test_month is not None and test_year is not None:
             start_date = pd.Timestamp(year=int(test_year), month=int(test_month), day=1)
-            df = df[df["Date"] >= start_date].sort_values("Date")
-            if df.empty:
-                print(
-                    f"Warning: no data for {company_name} from {start_date.date()} onward. "
-                    "Skipping this company in test mode."
-                )
-                continue
+
+            if is_new_dataset:
+                # Candidate dataset: keep data FROM the cutoff onward
+                df = df[df["Date"] >= start_date].sort_values("Date")
+                if df.empty:
+                    print(
+                        f"Warning: no data for {company_name} from {start_date.date()} onward. "
+                        "Skipping this company in test mode."
+                    )
+                    continue
+            else:
+                # Baseline dataset: keep data strictly BEFORE the cutoff
+                df = df[df["Date"] < start_date].sort_values("Date")
+                if df.empty:
+                    print(
+                        f"Warning: no data for {company_name} before {start_date.date()} when "
+                        "preparing baseline data in test mode. Skipping this company."
+                    )
+                    continue
         data_dict[company_name] = df
 
     if not prepared_dataset_folder.exists():
