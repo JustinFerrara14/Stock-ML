@@ -211,3 +211,30 @@ stages:
       hash: md5
       md5: aa698bc37e73ef11b5ac7011efb50c74
       size: 60707
+  drift_analysis:
+    cmd: python3.12 src/drift_analysis.py data/prepared data/prepared_30_11_2025
+      evaluation/drift_report.html evaluation/drift_summary.json
+    deps:
+    - path: data/prepared
+      hash: md5
+      md5: 0d32d6676803cfc18b89d5e256b9a49d.dir
+      size: 4742927
+      nfiles: 62
+    - path: data/prepared_30_11_2025
+      hash: md5
+      md5: c65b6ca54dae42dfa127a148a94d0026.dir
+      size: 4746620
+      nfiles: 62
+    - path: src/drift_analysis.py
+      hash: md5
+      md5: 4ef17522d1a80ceb1b6bd5ee9bb10964
+      size: 2598
+    outs:
+    - path: evaluation/drift_report.html
+      hash: md5
+      md5: dd5cdbee18337959664df28fc6ee2dcd
+      size: 3170717
+    - path: evaluation/drift_summary.json
+      hash: md5
+      md5: 0981c376275deca912de5bd76e22c894
+      size: 95
