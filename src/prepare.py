@@ -21,7 +21,7 @@ def load_financial_csv(file_path: Path) -> pd.DataFrame:
 
     # Clean dollar signs and convert to float
     for col in ["Close/Last", "Open", "High", "Low"]:
-        df[col] = df[col].replace({'\$': ''}, regex=True).astype(float)
+        df[col] = df[col].replace({r"\$": ""}, regex=True).astype(float)
 
     df["Volume"] = df["Volume"].astype(float)
     df["Date"] = pd.to_datetime(df["Date"], dayfirst=False)
@@ -114,12 +114,14 @@ def main() -> None:
         df = add_return_column(df)
         df = add_features(df)
 
-        # In test mode, for the newer dataset, keep only a single month/year
         if test_mode and is_new_dataset and test_month is not None and test_year is not None:
-            df = df[(df["Date"].dt.year == int(test_year)) & (df["Date"].dt.month == int(test_month))]
-            df = df.sort_values("Date")
+            start_date = pd.Timestamp(year=int(test_year), month=int(test_month), day=1)
+            df = df[df["Date"] >= start_date].sort_values("Date")
             if df.empty:
-                print(f"Warning: no data for {company_name} in {test_month}/{test_year} after filtering.")
+                print(
+                    f"Warning: no data for {company_name} from {start_date.date()} onward. "
+                    "Skipping this company in test mode."
+                )
                 continue
         data_dict[company_name] = df
 

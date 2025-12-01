@@ -49,9 +49,26 @@ def load_sequence_data(prepared_folder: Path, input_len, output_len) -> Tuple[np
         if len(X_train) > 0:
             X_train_list.append(X_train)
             y_train_list.append(y_train)
+        else:
+            print(f"[WARN] No train sequences could be created for {train_file.name}.")
+
         if len(X_test) > 0:
             X_test_list.append(X_test)
             y_test_list.append(y_test)
+        else:
+            print(f"[WARN] No test sequences could be created for {test_file.name}.")
+
+    if not X_train_list or not X_test_list:
+        raise ValueError(
+            "No sequence data could be created from prepared folder '"
+            f"{prepared_folder}'. "
+            "This typically happens when there are too few rows after "
+            "preprocessing and/or test_mode filtering for the chosen "
+            f"input_length={input_len} and output_length={output_len}. "
+            "Check 'params.yaml' (prepare.test_mode, test_month, "
+            "test_year, split and train.input_length/output_length) or "
+            "relax the test_mode filtering so that more history is kept."
+        )
 
     # Combine across companies
     X_train = np.concatenate(X_train_list)
