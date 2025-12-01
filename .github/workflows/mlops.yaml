@@ -138,7 +138,7 @@ jobs:
           echo "### Worst Prediction 1 Preview" >> report.md
           echo "#### main" >> report.md
           echo "##### Original Dataset" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview (Dataset 1)")' >> report.m
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview (Dataset 1)")' >> report.md
           echo "##### New Dataset" >> report.md
           echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1_candidate.png "Worst Prediction 1 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
