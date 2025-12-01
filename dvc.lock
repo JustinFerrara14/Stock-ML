@@ -10,8 +10,8 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: 0d70134381b1e2254bd8d51bf9cfe93a
-      size: 5540
+      md5: c1b64e045dac189dafcad8619b9b75de
+      size: 6403
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -31,16 +31,16 @@ stages:
     outs:
     - path: data/prepared
       hash: md5
-      md5: 0d32d6676803cfc18b89d5e256b9a49d.dir
-      size: 4742927
+      md5: ed2832b217c9f32e514f5e5eb4b759f5.dir
+      size: 3557431
       nfiles: 62
   train:
     cmd: python3.12 src/train.py data/prepared model
     deps:
     - path: data/prepared
       hash: md5
-      md5: 0d32d6676803cfc18b89d5e256b9a49d.dir
-      size: 4742927
+      md5: ed2832b217c9f32e514f5e5eb4b759f5.dir
+      size: 3557431
       nfiles: 62
     - path: src/train.py
       hash: md5
@@ -64,20 +64,20 @@ stages:
     outs:
     - path: evaluation/plots/loss_curve.png
       hash: md5
-      md5: 5ce0b8f1234943b18e76b54e5b9b4a24
-      size: 22899
+      md5: 2eed3c92c44ebf6387a0da0e55579eca
+      size: 36377
     - path: model
       hash: md5
-      md5: 6e05fafaa01bb1706e6c8148890f3bad.dir
-      size: 63279
+      md5: 67a61d548f47b2b2c05e05958025a483.dir
+      size: 63311
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared ""
     deps:
     - path: model
       hash: md5
-      md5: 6e05fafaa01bb1706e6c8148890f3bad.dir
-      size: 63279
+      md5: 67a61d548f47b2b2c05e05958025a483.dir
+      size: 63311
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
@@ -86,28 +86,28 @@ stages:
     outs:
     - path: evaluation/metrics.json
       hash: md5
-      md5: ed1a6ad0ac90215e9ef009716660ca15
-      size: 94
+      md5: 3481c7f4733747ccb49e835062b7013b
+      size: 95
     - path: evaluation/plots/best_prediction_1.png
       hash: md5
-      md5: 4cd84115a82b0c9d82f892ed47028e35
-      size: 79866
+      md5: f361b9521ecb8579e17c2c1b893db87a
+      size: 76381
     - path: evaluation/plots/best_prediction_2.png
       hash: md5
-      md5: 8198c95ef9a110b8b0e7c1274236ad62
-      size: 72276
+      md5: 7c824bc5c2d17fc7c6521f36e54ba145
+      size: 63577
     - path: evaluation/plots/forecast_example.png
       hash: md5
-      md5: 319dabb6b05bacd7c7ae4dc8381c39ea
-      size: 52999
+      md5: 5a4d042aa23bdac93102a7a4395c95b3
+      size: 53675
     - path: evaluation/plots/worst_prediction_1.png
       hash: md5
-      md5: 9f6e7261ee9cb60270cd504ca25140d0
-      size: 59590
+      md5: 866677f1370cd78afb33fa9ba588d218
+      size: 57879
     - path: evaluation/plots/worst_prediction_2.png
       hash: md5
-      md5: 82e13e285964d9bce555115d992d8c73
-      size: 60213
+      md5: 67595229639e73706bb82dd4171dee69
+      size: 60848
   prepare_30_11_2025:
     cmd: python3.12 src/prepare.py data/raw_30_11_2025 data/prepared_30_11_2025
     deps:
@@ -223,8 +223,8 @@ stages:
     deps:
     - path: data/prepared
       hash: md5
-      md5: 0d32d6676803cfc18b89d5e256b9a49d.dir
-      size: 4742927
+      md5: ed2832b217c9f32e514f5e5eb4b759f5.dir
+      size: 3557431
       nfiles: 62
     - path: data/prepared_candidate
       hash: md5
@@ -238,8 +238,8 @@ stages:
     outs:
     - path: evaluation/drift_report.html
       hash: md5
-      md5: 7785f7830df5f95296eb1b36670720b1
-      size: 3169976
+      md5: 9a44557812c4090effe4516297938fee
+      size: 3174781
     - path: evaluation/drift_summary.json
       hash: md5
       md5: 0981c376275deca912de5bd76e22c894
@@ -254,8 +254,8 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: 0d70134381b1e2254bd8d51bf9cfe93a
-      size: 5540
+      md5: c1b64e045dac189dafcad8619b9b75de
+      size: 6403
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -312,8 +312,8 @@ stages:
       size: 28548
     - path: model_candidate
       hash: md5
-      md5: 81d06607745859d917e0f39b3fbb4390.dir
-      size: 63723
+      md5: d06fdc45ea190a36095d9cf357e33df0.dir
+      size: 63427
       nfiles: 2
   evaluate_candidate:
     cmd: python3.12 src/evaluate.py model_candidate data/prepared_candidate 
@@ -321,8 +321,8 @@ stages:
     deps:
     - path: model_candidate
       hash: md5
-      md5: 81d06607745859d917e0f39b3fbb4390.dir
-      size: 63723
+      md5: d06fdc45ea190a36095d9cf357e33df0.dir
+      size: 63427
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
