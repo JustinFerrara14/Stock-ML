@@ -3,6 +3,12 @@ prepare:
   split: 0.2
   image_size: [32, 32]
   grayscale: True
+  # Test mode: when true, restrict newer dataset to a single month
+  # so that an artificial data drift appears.
+  test_mode: True
+  # Month (1-12) and year used when test_mode is true
+  test_month: 11
+  test_year: 2025
 
 train:
   seed: 77

@@ -10,12 +10,12 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: 7e0bbebf80ca116a81f2c034b733ead8
-      size: 4700
+      md5: f676cecd1cf874025f108a087d738ac0
+      size: 5690
     - path: src/utils/seed.py
       hash: md5
-      md5: 963a551c177450f50e4f11bd1a9ab2c7
-      size: 437
+      md5: 88d1f3a0005669ee70a6b5177dc12abb
+      size: 454
     params:
       params.yaml:
         prepare:
@@ -25,11 +25,14 @@ stages:
           - 32
           - 32
           grayscale: true
+          test_mode: true
+          test_month: 11
+          test_year: 2025
     outs:
     - path: data/prepared
       hash: md5
-      md5: 0d32d6676803cfc18b89d5e256b9a49d.dir
-      size: 4742927
+      md5: dd4c01b0fe9981d5bcbccd1be42c09a2.dir
+      size: 4776088
       nfiles: 62
   train:
     cmd: python3.12 src/train.py data/prepared model
@@ -115,12 +118,12 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: 7e0bbebf80ca116a81f2c034b733ead8
-      size: 4700
+      md5: f676cecd1cf874025f108a087d738ac0
+      size: 5690
     - path: src/utils/seed.py
       hash: md5
-      md5: 963a551c177450f50e4f11bd1a9ab2c7
-      size: 437
+      md5: 88d1f3a0005669ee70a6b5177dc12abb
+      size: 454
     params:
       params.yaml:
         prepare:
@@ -130,11 +133,14 @@ stages:
           - 32
           - 32
           grayscale: true
+          test_mode: true
+          test_month: 11
+          test_year: 2025
     outs:
     - path: data/prepared_30_11_2025
       hash: md5
-      md5: c65b6ca54dae42dfa127a148a94d0026.dir
-      size: 4746620
+      md5: 533b4d4192e991df4f50ac69022c5b79.dir
+      size: 161011
       nfiles: 62
   train_30_11_2025:
     cmd: python3.12 src/train.py data/prepared_30_11_2025 model_30_11_2025

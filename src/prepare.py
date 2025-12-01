@@ -95,6 +95,14 @@ def main() -> None:
     seed = prepare_params["seed"]
     split = prepare_params["split"]
 
+    # Optional test mode to artificially reduce the newer dataset
+    test_mode = prepare_params.get("test_mode", False)
+    test_month = prepare_params.get("test_month")
+    test_year = prepare_params.get("test_year")
+
+    # Heuristic: only apply test mode on the newer dataset folder
+    is_new_dataset = "30_11_2025" in str(raw_dataset_folder)
+
     # Set seed for reproducibility
     set_seed(seed)
 
@@ -105,6 +113,14 @@ def main() -> None:
         df = load_financial_csv(csv_file)
         df = add_return_column(df)
         df = add_features(df)
+
+        # In test mode, for the newer dataset, keep only a single month/year
+        if test_mode and is_new_dataset and test_month is not None and test_year is not None:
+            df = df[(df["Date"].dt.year == int(test_year)) & (df["Date"].dt.month == int(test_month))]
+            df = df.sort_values("Date")
+            if df.empty:
+                print(f"Warning: no data for {company_name} in {test_month}/{test_year} after filtering.")
+                continue
         data_dict[company_name] = df
 
     if not prepared_dataset_folder.exists():
