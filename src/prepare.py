@@ -101,7 +101,7 @@ def main() -> None:
     test_year = prepare_params.get("test_year")
 
     # Heuristic: only apply test mode on the newer dataset folder
-    is_new_dataset = "30_11_2025" in str(raw_dataset_folder)
+    is_new_dataset = "candidate" in str(raw_dataset_folder)
 
     # Set seed for reproducibility
     set_seed(seed)
