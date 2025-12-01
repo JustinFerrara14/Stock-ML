@@ -99,9 +99,9 @@ jobs:
           echo "### Training History" >> report.md
           echo "#### main" >> report.md
           echo "##### Original Dataset" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve "Training History (Dataset 1)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve.png "Training History (Dataset 1)")' >> report.md
           echo "##### New Dataset" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve_candidate "Training History (Dataset 2)")' >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve_candidate.png "Training History (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
           echo "##### Original Dataset" >> report.md
           echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve.png "Training History (Dataset 1)")' >> report.md
