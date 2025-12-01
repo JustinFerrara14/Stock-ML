@@ -9,16 +9,16 @@ stages:
     - prepare
     outs:
     - data/prepared
-  prepare_30_11_2025:
-    cmd: python3.12 src/prepare.py data/raw_30_11_2025 data/prepared_30_11_2025
+  prepare_candidate:
+    cmd: python3.12 src/prepare.py data/raw_candidate data/prepared_candidate
     deps:
-    - data/raw_30_11_2025
+    - data/raw_candidate
     - src/prepare.py
     - src/utils/seed.py
     params:
     - prepare
     outs:
-    - data/prepared_30_11_2025
+    - data/prepared_candidate
   train:
     cmd: python3.12 src/train.py data/prepared model
     deps:
@@ -31,18 +31,18 @@ stages:
     - model
     plots:
     - evaluation/plots/loss_curve.png
-  train_30_11_2025:
-    cmd: python3.12 src/train.py data/prepared_30_11_2025 model_30_11_2025
+  train_candidate:
+    cmd: python3.12 src/train.py data/prepared_candidate model_candidate
     deps:
-    - data/prepared_30_11_2025
+    - data/prepared_candidate
     - src/train.py
     - src/utils/seed.py
     params:
     - train
     outs:
-    - model_30_11_2025
+    - model_candidate
     plots:
-    - evaluation/plots/loss_curve_30_11_2025.png
+    - evaluation/plots/loss_curve_candidate.png
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared ""
     deps:
@@ -56,24 +56,24 @@ stages:
     - evaluation/plots/best_prediction_2.png
     - evaluation/plots/worst_prediction_1.png
     - evaluation/plots/worst_prediction_2.png
-  evaluate_30_11_2025:
-    cmd: python3.12 src/evaluate.py model_30_11_2025 data/prepared_30_11_2025 _30_11_2025
+  evaluate_candidate:
+    cmd: python3.12 src/evaluate.py model_candidate data/prepared_candidate _candidate
     deps:
-    - model_30_11_2025
+    - model_candidate
     - src/evaluate.py
     metrics:
-    - evaluation/metrics_30_11_2025.json
+    - evaluation/metrics_candidate.json
     plots:
-    - evaluation/plots/forecast_example_30_11_2025.png
-    - evaluation/plots/best_prediction_1_30_11_2025.png
-    - evaluation/plots/best_prediction_2_30_11_2025.png
-    - evaluation/plots/worst_prediction_1_30_11_2025.png
-    - evaluation/plots/worst_prediction_2_30_11_2025.png
+    - evaluation/plots/forecast_example_candidate.png
+    - evaluation/plots/best_prediction_1_candidate.png
+    - evaluation/plots/best_prediction_2_candidate.png
+    - evaluation/plots/worst_prediction_1_candidate.png
+    - evaluation/plots/worst_prediction_2_candidate.png
   drift_analysis:
-    cmd: python3.12 src/drift_analysis.py data/prepared data/prepared_30_11_2025 evaluation/drift_report.html evaluation/drift_summary.json
+    cmd: python3.12 src/drift_analysis.py data/prepared data/prepared_candidate evaluation/drift_report.html evaluation/drift_summary.json
     deps:
     - data/prepared
-    - data/prepared_30_11_2025
+    - data/prepared_candidate
     - src/drift_analysis.py
     metrics:
     - evaluation/drift_summary.json
