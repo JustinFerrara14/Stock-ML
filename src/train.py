@@ -152,7 +152,7 @@ def main() -> None:
     # Derive a suffix from the model folder name so each stage can have
     # its own loss curve file tracked by DVC.
     #   - "model"             -> ""                 (loss_curve.png)
-    #   - "model_30_11_2025" -> "_30_11_2025"      (loss_curve_30_11_2025.png)
+    #   - "model_candidate" -> "candidate"      (loss_curve_candidate.png)
     suffix = ""
     if model_folder.name.startswith("model_"):
         suffix = "_" + model_folder.name.removeprefix("model_")
