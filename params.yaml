@@ -3,12 +3,21 @@ prepare:
   split: 0.2
   image_size: [32, 32]
   grayscale: True
+
   # Test mode: when true, restrict newer dataset to start at a specific month/year
   # NOTE: Keep in minde that you need a lot of row since the train/test split is done after sequence creation
   test_mode: True
   # Month (1-12) and year used when test_mode is true
   test_month: 8
   test_year: 2024
+
+  # When true, inject strong synthetic drift into the candidate prepared data
+  # (data/raw_candidate -> data/prepared_candidate)
+  synthetic_drift_mode: True
+  # Additive shift applied to all features in candidate data
+  synthetic_drift_shift: 0
+  # Multiplicative scaling factor applied to all features in candidate data
+  synthetic_drift_scale: 5
 
 train:
   seed: 77

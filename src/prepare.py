@@ -14,6 +14,17 @@ import joblib
 from utils.seed import set_seed
 
 
+FEATURE_COLUMNS: List[str] = [
+    "Return",
+    "SMA_5",
+    "SMA_10",
+    "EMA_5",
+    "High_Low_Spread",
+    "Open_Close_Ratio",
+    "Volume_Change",
+]
+
+
 def load_financial_csv(file_path: Path) -> pd.DataFrame:
     """Load and clean a financial CSV file."""
     df = pd.read_csv(file_path)
@@ -71,6 +82,22 @@ def get_preview_plot(data_dict: dict[str, pd.DataFrame]) -> plt.Figure:
     return fig
 
 
+def _inject_synthetic_drift(
+    df: pd.DataFrame,
+    drift_shift: float,
+    drift_scale: float,
+) -> pd.DataFrame:
+    
+    df = df.copy()
+    for col in FEATURE_COLUMNS:
+        if col not in df.columns:
+            continue
+
+        df[col] = df[col] * drift_scale + drift_shift
+
+    return df
+
+
 def split_dataset(df: pd.DataFrame, split_ratio: float, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Split data into train/test based on date."""
     df = df.sort_values("Date")
@@ -104,6 +131,14 @@ def main() -> None:
     test_month = prepare_params.get("test_month")
     test_year = prepare_params.get("test_year")
 
+    # When enabled, in addition to the time-based split above we *also*
+    # inject synthetic drift directly in feature space for the candidate
+    # dataset. This keeps the folder layout and overall pipeline intact
+    # while guaranteeing a strong statistical shift for drift tests.
+    synthetic_drift_mode = prepare_params.get("synthetic_drift_mode", False)
+    drift_shift = float(prepare_params.get("synthetic_drift_shift", 5.0))
+    drift_scale = float(prepare_params.get("synthetic_drift_scale", 2.0))
+
     # Heuristic: only apply test mode on the newer dataset folder
     is_new_dataset = "candidate" in str(raw_dataset_folder)
 
@@ -117,6 +152,10 @@ def main() -> None:
         df = load_financial_csv(csv_file)
         df = add_return_column(df)
         df = add_features(df)
+
+        # Optionally inject synthetic drift for candidate dataset only
+        if synthetic_drift_mode and is_new_dataset:
+            df = _inject_synthetic_drift(df, drift_shift=drift_shift, drift_scale=drift_scale)
 
         if test_mode and test_month is not None and test_year is not None:
             start_date = pd.Timestamp(year=int(test_year), month=int(test_month), day=1)
@@ -148,7 +187,7 @@ def main() -> None:
     preview_plot = get_preview_plot(data_dict)
     preview_plot.savefig(prepared_dataset_folder / "preview.png")
 
-    # Normalize and split
+    # Normalize, split and optionally inject synthetic drift after scaling
     train_data, test_data = {}, {}
     for name, df in data_dict.items():
         df_train, df_test = split_dataset(df, split, seed)
@@ -166,6 +205,18 @@ def main() -> None:
         scaler = StandardScaler()
         df_train[feature_cols] = scaler.fit_transform(df_train[feature_cols])
         df_test[feature_cols] = scaler.transform(df_test[feature_cols])
+
+        # For testing purposes: if synthetic drift is enabled and we are
+        # preparing the candidate dataset, apply a strong drift directly in
+        # the scaled feature space of the *train* data. This ensures that
+        # Evidently's drift analysis (which operates on the saved *_train.csv
+        # files) will observe a clear distributional shift.
+        if synthetic_drift_mode and is_new_dataset:
+            df_train = _inject_synthetic_drift(
+                df_train,
+                drift_shift=drift_shift,
+                drift_scale=drift_scale,
+            )
 
         train_data[name] = df_train
         test_data[name] = df_test

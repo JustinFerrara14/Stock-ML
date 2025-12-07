@@ -10,8 +10,8 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: c1b64e045dac189dafcad8619b9b75de
-      size: 6403
+      md5: 3e421d166907bfcb26d6d25c74c45dc1
+      size: 8225
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -28,6 +28,9 @@ stages:
           test_mode: true
           test_month: 8
           test_year: 2024
+          synthetic_drift_mode: true
+          synthetic_drift_shift: 0
+          synthetic_drift_scale: 5
     outs:
     - path: data/prepared
       hash: md5
@@ -68,16 +71,16 @@ stages:
       size: 36377
     - path: model
       hash: md5
-      md5: 67a61d548f47b2b2c05e05958025a483.dir
-      size: 63311
+      md5: e2b16cf8c0cbcdf9910fa96dbeb60ac5.dir
+      size: 63319
       nfiles: 2
   evaluate:
     cmd: python3.12 src/evaluate.py model data/prepared ""
     deps:
     - path: model
       hash: md5
-      md5: 67a61d548f47b2b2c05e05958025a483.dir
-      size: 63311
+      md5: e2b16cf8c0cbcdf9910fa96dbeb60ac5.dir
+      size: 63319
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
@@ -86,28 +89,28 @@ stages:
     outs:
     - path: evaluation/metrics.json
       hash: md5
-      md5: 3481c7f4733747ccb49e835062b7013b
-      size: 95
+      md5: 4f3206b4ae7f1dcd5b6c9b75b367da57
+      size: 92
     - path: evaluation/plots/best_prediction_1.png
       hash: md5
-      md5: f361b9521ecb8579e17c2c1b893db87a
-      size: 76381
+      md5: 35826bd1aa87ef9159c9aee1268494ef
+      size: 71314
     - path: evaluation/plots/best_prediction_2.png
       hash: md5
-      md5: 7c824bc5c2d17fc7c6521f36e54ba145
-      size: 63577
+      md5: 265675d3b48a03fd50ddd248aacb6f1e
+      size: 70950
     - path: evaluation/plots/forecast_example.png
       hash: md5
-      md5: 5a4d042aa23bdac93102a7a4395c95b3
-      size: 53675
+      md5: 876e0e7a2db0ea7e757511b8f2dcaea1
+      size: 54593
     - path: evaluation/plots/worst_prediction_1.png
       hash: md5
-      md5: 866677f1370cd78afb33fa9ba588d218
-      size: 57879
+      md5: 0d1494dced90a7db6a76e3cadbf9dfab
+      size: 59510
     - path: evaluation/plots/worst_prediction_2.png
       hash: md5
-      md5: 67595229639e73706bb82dd4171dee69
-      size: 60848
+      md5: c235dbf846309f2f3548de3159de8004
+      size: 61595
   prepare_30_11_2025:
     cmd: python3.12 src/prepare.py data/raw_30_11_2025 data/prepared_30_11_2025
     deps:
@@ -228,8 +231,8 @@ stages:
       nfiles: 62
     - path: data/prepared_candidate
       hash: md5
-      md5: 119071d1897590d99fdb5e5d8f57da7a.dir
-      size: 1382877
+      md5: d75988b121842b8d94fda2081e9a371e.dir
+      size: 1360573
       nfiles: 62
     - path: src/drift_analysis.py
       hash: md5
@@ -238,12 +241,12 @@ stages:
     outs:
     - path: evaluation/drift_report.html
       hash: md5
-      md5: 9a44557812c4090effe4516297938fee
-      size: 3174781
+      md5: a2bcc04a502f67370d277f9471e91104
+      size: 3174140
     - path: evaluation/drift_summary.json
       hash: md5
-      md5: 0981c376275deca912de5bd76e22c894
-      size: 95
+      md5: 6a4cb72d58d3132ab3621d0e08343840
+      size: 94
   prepare_candidate:
     cmd: python3.12 src/prepare.py data/raw_candidate data/prepared_candidate
     deps:
@@ -254,8 +257,8 @@ stages:
       nfiles: 20
     - path: src/prepare.py
       hash: md5
-      md5: c1b64e045dac189dafcad8619b9b75de
-      size: 6403
+      md5: 3e421d166907bfcb26d6d25c74c45dc1
+      size: 8225
     - path: src/utils/seed.py
       hash: md5
       md5: 963a551c177450f50e4f11bd1a9ab2c7
@@ -272,19 +275,22 @@ stages:
           test_mode: true
           test_month: 8
           test_year: 2024
+          synthetic_drift_mode: true
+          synthetic_drift_shift: 0
+          synthetic_drift_scale: 5
     outs:
     - path: data/prepared_candidate
       hash: md5
-      md5: 119071d1897590d99fdb5e5d8f57da7a.dir
-      size: 1382877
+      md5: d75988b121842b8d94fda2081e9a371e.dir
+      size: 1360573
       nfiles: 62
   train_candidate:
     cmd: python3.12 src/train.py data/prepared_candidate model_candidate
     deps:
     - path: data/prepared_candidate
       hash: md5
-      md5: 119071d1897590d99fdb5e5d8f57da7a.dir
-      size: 1382877
+      md5: d75988b121842b8d94fda2081e9a371e.dir
+      size: 1360573
       nfiles: 62
     - path: src/train.py
       hash: md5
@@ -308,12 +314,12 @@ stages:
     outs:
     - path: evaluation/plots/loss_curve_candidate.png
       hash: md5
-      md5: ea92fd58f03e36fc920ba4918c208c03
-      size: 28548
+      md5: 0cad6e976b7dbb3c34dd82130cd9ec50
+      size: 21953
     - path: model_candidate
       hash: md5
-      md5: d06fdc45ea190a36095d9cf357e33df0.dir
-      size: 63427
+      md5: 0cfc4020b651e26d7e33ab144687925d.dir
+      size: 63187
       nfiles: 2
   evaluate_candidate:
     cmd: python3.12 src/evaluate.py model_candidate data/prepared_candidate 
@@ -321,8 +327,8 @@ stages:
     deps:
     - path: model_candidate
       hash: md5
-      md5: d06fdc45ea190a36095d9cf357e33df0.dir
-      size: 63427
+      md5: 0cfc4020b651e26d7e33ab144687925d.dir
+      size: 63187
       nfiles: 2
     - path: src/evaluate.py
       hash: md5
@@ -331,25 +337,25 @@ stages:
     outs:
     - path: evaluation/metrics_candidate.json
       hash: md5
-      md5: 46cf18816eff89cfd4317125b1a01d42
-      size: 95
+      md5: 6f05ae455ef238a19b713e84352b2ed7
+      size: 94
     - path: evaluation/plots/best_prediction_1_candidate.png
       hash: md5
-      md5: a050782120ad3b323dc744ca59c1eb69
-      size: 79814
+      md5: 521a860f45e00202d978f689ceeb3ab4
+      size: 55259
     - path: evaluation/plots/best_prediction_2_candidate.png
       hash: md5
-      md5: fdacdc23eb592a6bed39523e5bb57d0d
-      size: 78560
+      md5: 340c338ee74d317d799ce358cbca340b
+      size: 51735
     - path: evaluation/plots/forecast_example_candidate.png
       hash: md5
-      md5: 135af4dd1f0ab772fd230b3daa75986e
-      size: 70203
+      md5: 8055ceea54651041c3d85836aa37eb1a
+      size: 41440
     - path: evaluation/plots/worst_prediction_1_candidate.png
       hash: md5
-      md5: ddf06dfb8b8f11fa4cd6d6fcc43f346d
-      size: 72960
+      md5: 054f59445e5b71e97b460583d4f02fe4
+      size: 49107
     - path: evaluation/plots/worst_prediction_2_candidate.png
       hash: md5
-      md5: afcf89d86cc925254b95161610c491f7
-      size: 76916
+      md5: 8f57829cb673a7d12164681ec0de5f02
+      size: 48116
