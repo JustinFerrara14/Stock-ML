@@ -200,7 +200,29 @@ As the model is deployed on GKE, it can easily scale based on demand. Kubernetes
 
 = Performance Improvements
 
-TODO cite @stock_ml_repo_pr10
+As seen in the previous section, the initial model@stock_ml_repo_pr6 was not performing well, with high error rates and low predictive accuracy. To address these issues, we implemented several performance improvements to enhance the model's capabilities, described in detail in PR @stock_ml_repo_pr10.
+
+== Feature Engineering Enhancements
+
+To improve the model's performance, we extended the input data to include the past 60 days of stock prices instead of just 30 days. This provided the model with more historical context, allowing it to capture longer-term trends and patterns in stock price movements.
+
+We also added new features derived from the existing data, to provide additional insights for the model. These features are described in the following table:
+- *Short-term trend indicators:* Computed 5-day and 10-day simple moving averages (SMA_5, SMA_10) to smooth short-horizon fluctuations and capture underlying price trends.
+- *Recent-information-weighted trend measure:* Incorporated a 5-day exponential moving average (EMA_5) to assign greater weight to recent observations and enhance sensitivity to short-term market movements.
+- *Volatility approximation:* Derived a High-Low price spread feature as a proxy for intraday volatility.
+- *Directional price-movement ratio:* Constructed an Open-to-Close price ratio to quantify daily directional bias.
+- *Volume-based activity metric:* Calculated the percentage change in trading volume to characterize shifts in market activity.
+
+== Model Architecture Optimization
+
+To avoid overfitting and improve generalization, we increased the dropout rate in the LSTM layers from 0.1 to 0.2. This adjustment helped the model to better handle unseen data by preventing it from relying too heavily on specific neurons during training.
+
+== Results
+
+The performance improvements led to significant enhancements in the model's predictive accuracy and reliability. The key results are summarized in the pull request @stock_ml_repo_pr10, which includes:
+- A reduction in Mean Absolute Error (MAE) from 1.87 to 0.66.
+- An decrease in R2 Score from 0.00 to -1.19 (which is not an improvement, but expected due to the nature of stock price prediction).
+- Visualizations comparing the model's predictions before and after the improvements, demonstrating better alignment with actual stock prices.
 
 = Data Drift Analysis and Integration
 
