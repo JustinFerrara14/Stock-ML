@@ -5,6 +5,39 @@ stock_ml_repo:
   url:
     value: https://github.com/JustinFerrara14/Stock-ML
     date: 2025-12-08
+
+stock_ml_repo_pr6:
+  type: Web
+  title: Stock-ML Repository - Change to financial data PR 6
+  author: Justin Ferrara
+  url:
+    value: https://github.com/JustinFerrara14/Stock-ML/pull/6
+    date: 2025-12-08
   parent:
-    type: Web
-    title: Policies
+    type: Repository
+    title: Stock-ML Repository
+    url: https://github.com/JustinFerrara14/Stock-ML
+
+stock_ml_repo_pr10:
+  type: Web
+  title: Stock-ML Repository - Performance Improvements PR 10
+  author: Justin Ferrara
+  url:
+    value: https://github.com/JustinFerrara14/Stock-ML/pull/10
+    date: 2025-12-08
+  parent:
+    type: Repository
+    title: Stock-ML Repository
+    url: https://github.com/JustinFerrara14/Stock-ML
+
+stock_ml_repo_pr12:
+  type: Web
+  title: Stock-ML Repository - Data Drift Integration PR 12
+  author: Justin Ferrara
+  url:
+    value: https://github.com/JustinFerrara14/Stock-ML/pull/12
+    date: 2025-12-08
+  parent:
+    type: Repository
+    title: Stock-ML Repository
+    url: https://github.com/JustinFerrara14/Stock-ML

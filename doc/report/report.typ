@@ -76,11 +76,15 @@ The project operates under multiple constraints and risks that could influence i
 
 These constraints comes with risks including potential costs associated with cloud technologies and APIs, the inherent instability of models due to unpredictable market dynamics, and the possibility of overfitting, which could reduce the model's ability to generalize effectively to unseen market conditions.
 
-= Data Engineering
+= Fisrt Version
+
+TODO cite @stock_ml_repo_pr6
+
+== Data Engineering
 
 The data engineering phase is crucial for the success of the stock price prediction project. It involves several key steps to ensure that the data is properly collected, processed, and stored for effective use in machine learning models.
 
-== Data Acquisition
+=== Data Acquisition
 
 To acquire the necessary data for stock price prediction, we used the #link("https://www.nasdaq.com")[https://www.nasdaq.com] website to download historical stock data for 20 stocks in the NASDAQ index. The data collected is in CSV format, and contains columns such as Date, Close, Open, High, Low, and Volume for the past 5 years. The following companies were selected for this project:
 - Apple Inc. (AAPL)
@@ -106,7 +110,7 @@ To acquire the necessary data for stock price prediction, we used the #link("htt
 
 The data spans from 11/10/2020 to 11/07/2025 for each stocks, providing a comprehensive dataset for training and evaluating the machine learning models.
 
-== Data Preprocessing
+=== Data Preprocessing
 
 The preprocessing steps involved cleaning the data and transforming the data into a suitable format for modeling. We performed the following preprocessing tasks:
 - Checking for missing values and handling them appropriately (e.g., imputation or removal).
@@ -114,19 +118,19 @@ The preprocessing steps involved cleaning the data and transforming the data int
 - Normalizing the data to ensure that all features are on a similar scale, which is important for machine learning algorithms.
 - Splitting the data into training, validation, and test sets to evaluate the model's performance effectively.
 
-== Data Storage
+=== Data Storage
 
 The raw and preprocessed data are stored in a structured format using CSV files and DVC for version control. This allows us to track changes in the data over time and ensures reproducibility in our experiments. The data is stored in a dedicated S3 bucket for easy access and scalability (as shown in the tutorial #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/]).
 
-= ML Model Development
+== ML Model Development
 
 To develop the machine learning model for stock price prediction, we followed the #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/] guide to set up our MLOps pipeline. This involved several key steps to ensure that the model is trained, validated, and deployed effectively.
 
-== Feature Engineering
+=== Feature Engineering
 
 TODO
 
-== Model Training and Validation
+=== Model Training and Validation
 
 The model is trained using the preprocessed data, which includes the stock closing prices and other relevant features. We used LSTM (Long Short-Term Memory) neural networks, which are well-suited for time series data like stock prices. The training process involves optimizing the model's parameters to minimize the prediction error on the training set.
 
@@ -134,7 +138,7 @@ The validation set is used to tune hyperparameters and prevent overfitting.
 
 TODO more details
 
-== Model Evaluation
+=== Model Evaluation
 
 The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared (R²). These metrics provide insights into how well the model predicts stock prices compared to actual values. We also perform backtesting to assess the model's performance over historical data.
 
@@ -145,7 +149,7 @@ Here is a brief explanation of the evaluation metrics used:
 
 The best and worst predictions are visualized using plots to illustrate the model's performance and to better understand its strengths and weaknesses.
 
-= Deployment
+== Deployment
 
 To deploy the model, we use the #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/] guidelines to set up a base environment for deployment.
 
@@ -153,7 +157,7 @@ The model is trained locally. On every pull request, the model is retrained in a
 
 TODO
 
-== CI/CD Pipeline
+=== CI/CD Pipeline
 
 The CI/CD pipeline, defined in the MLOps workflow, automates the entire lifecycle of model development, testing, and deployment using GitHub Actions, DVC, CML, and BentoML. It runs on a self-hosted runner for training tasks and on GitHub-hosted runners for deployment.
 
@@ -186,15 +190,21 @@ It consists of two main jobs:
   - Updates the Kubernetes deployment manifest to reference the new image version (based on the Git SHA).
   - Applies the updated deployment and service configuration to deploy the new model version to Kubernetes.
 
-== Infrastructure
+=== Infrastructure
 
 The infrastructure for deploying the machine learning model is set up using Google Cloud Platform (GCP). We utilize Google Kubernetes Engine (GKE) to manage the containerized application, ensuring scalability and reliability. The model is containerized using Docker, allowing for consistent deployment across different environments.
 
-== Scalability
+=== Scalability
 
 As the model is deployed on GKE, it can easily scale based on demand. Kubernetes allows us to define resource limits and auto-scaling policies to handle varying workloads. This ensures that the application remains responsive even during peak usage times.
 
-= Monitoring
+= Performance Improvements
+
+TODO cite @stock_ml_repo_pr10
+
+= Data Drift Analysis and Integration
+
+TODO cite @stock_ml_repo_pr12
 
 To monitor the model's performance, we choose to use only the pipeline as monitoring tool. This allows to track the model's performance over time and detect any potential issues related to data drift or model degradation, as the data used for training is updated weekly. However, this limits the monitoring capabilities compared to dedicated monitoring tools, which can monitor the model in real-time and provide more detailed insights into its performance.
 
@@ -210,6 +220,8 @@ TODO
 
 == Continuous Learning
 
+TODO change section name
+
 To implement continuous learning, we will set up a weekly retraining schedule for the fine-tuned model. This involves:
 - Collecting new data from the previous week.
 - Preprocessing the new data to ensure it is in the correct format for training.
@@ -218,7 +230,6 @@ To implement continuous learning, we will set up a weekly retraining schedule fo
 
 This process will be automated using the CI/CD pipeline, ensuring that the fine-tuned model is always up-to-date with the latest data.
 
-TODO put in another section?
 
 = Conclusion
 
