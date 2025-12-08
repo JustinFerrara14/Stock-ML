@@ -1,0 +1,10 @@
+stock_ml_repo:
+  type: Web
+  title: Stock-ML Repository
+  author: Justin Ferrara
+  url:
+    value: https://github.com/JustinFerrara14/Stock-ML
+    date: 2025-12-08
+  parent:
+    type: Web
+    title: Policies

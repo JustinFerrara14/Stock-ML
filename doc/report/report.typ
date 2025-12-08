@@ -18,7 +18,7 @@
 
   logo: image("template/logo.png"),
   date: datetime.today().display("[day].[month].[year]"),
-  language: "fr", // Or en if required
+  language: "en", // Or en if required
   version: "1.0.0",
 )
 
@@ -232,3 +232,8 @@ TODO speak about the performance PR and the results obtained there (added more f
 TODO speak about the data drift results obtained (no data drift detected, both models performed similarly over time, tools used to detect data drift, etc.)
 
 TODO speak about the limitations of the project and possible improvements (more data, more features, other models, etc.)
+
+#pagebreak()
+
+// Bibliography
+#bibliography("./assets/bib.yml", full: true)
