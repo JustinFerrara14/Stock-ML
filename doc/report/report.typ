@@ -26,9 +26,11 @@
 
 = Introduction
 
-The objective is to create a simple predictive market model. The model would take as input the stock closing price for each month, with the goal of predicting the closing prices for the next 5 days. The dataset would consist of the past year's data for the top 100 stocks of a stock market index.
+The objective is to create a simple predictive market model. The model would take as input the stock closing price for each month, with the goal of predicting the closing prices for the next 5 days. The dataset would consist of the past 5 year's data for the most popular technology stocks in the NASDAQ index.
 
 As an advanced MLOps problem, we will study the data drift in our results. The goal is to fine-tune our model every week using the new data from the previous week. We will then compare the performance of our models over time. The objective here is to observe whether the performance of older models degrades over time compared to their updated fine-tuned versions. (Model drift)
+
+TODO more references and go deeper about the results obtained
 
 #pagebreak()
 
@@ -223,3 +225,10 @@ TODO put in another section?
 Assessment ??
 
 TODO
+
+
+TODO speak about the performance PR and the results obtained there (added more features, extend the input data to 60 days, etc.)
+
+TODO speak about the data drift results obtained (no data drift detected, both models performed similarly over time, tools used to detect data drift, etc.)
+
+TODO speak about the limitations of the project and possible improvements (more data, more features, other models, etc.)
