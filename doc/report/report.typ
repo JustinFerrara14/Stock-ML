@@ -226,32 +226,65 @@ The performance improvements led to significant enhancements in the model's pred
 
 = Data Drift Analysis and Integration
 
-TODO cite @stock_ml_repo_pr12
+To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with pull request @stock_ml_repo_pr12. The `evidently` package was added as the primary toolkit for measuring drift on the prepared datasets. This enables both quantitative drift metrics and automated reporting in HTML and JSON formats.
 
-To monitor the model's performance, we choose to use only the pipeline as monitoring tool. This allows to track the model's performance over time and detect any potential issues related to data drift or model degradation, as the data used for training is updated weekly. However, this limits the monitoring capabilities compared to dedicated monitoring tools, which can monitor the model in real-time and provide more detailed insights into its performance.
+== Prepared Step Improvements
 
-== Data Drift Detection
+The data preparation stage was expanded to output two parallel datasets:
 
-To detect data drift, we will implement the training of 2 models:
-- A base model that will be trained once on the initial dataset and will not be updated.
-- A fine-tuned model that will be retrained weekly using the new data from the previous week.
+- Candidate data: the newly prepared dataset generated from the latest weekly ingestion (from folder `data/raw_candidate/`).
+- Current data: the previously accepted dataset used for training the active model (from folder `data/raw/`).
 
-By comparing the performance of these two models over time, we can identify if data drift is occurring. If the fine-tuned model consistently outperforms the base model (with new data), it indicates that the underlying data distribution has changed, necessitating regular updates to maintain optimal performance.
+These datasets are stored in `data/prepared/` and `data/prepared_candidate/` respectively, allowing for direct comparison of feature distributions over time.
 
-TODO
+== Pipeline Enhancements
 
-== Continuous Learning
+A new data drift detection step was added to the workflow. This component:
 
-TODO change section name
+- Loads the current and candidate prepared datasets.
+- Uses evidently to compute drift metrics across all features.
+- Generates:
+  - An HTML report for human-readable inspection.
+  - A JSON report containing structured drift statistics suitable for automated analysis.
+- Stores both reports as pipeline artifacts.
+- Inserts a summary of the JSON report into pipeline comments for quick visibility during CI/CD reviews.
 
-To implement continuous learning, we will set up a weekly retraining schedule for the fine-tuned model. This involves:
-- Collecting new data from the previous week.
-- Preprocessing the new data to ensure it is in the correct format for training.
-- Retraining the fine-tuned model using the updated dataset.
-- Evaluating the performance of both the base and fine-tuned models on a validation set.
+This approach ensures that every potential model update is automatically preceded by a drift evaluation that highlights feature-level changes.
 
-This process will be automated using the CI/CD pipeline, ensuring that the fine-tuned model is always up-to-date with the latest data.
+The pipeline comment summarize the key findings from the JSON report, including:
+- If a significant drift was detected for any features.
+- The number of drifted columns (features).
+- The number of columns analyzed (features).
 
+An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12.
+
+TODO add figure
+
+== Data Drift Detection Strategy
+
+The first step in our data drift detection strategy is to compare the statistical distributions of features between the current and candidate datasets. Using evidently's built-in statistical tests (e.g., Kolmogorov-Smirnov test for continuous features, Chi-squared test for categorical features), we assess whether significant changes have occurred in the input data over time.
+
+The second step to detect data drift involves a dual-model strategy within the pipeline. The idea is to train and evaluate two models in parallel: a base model that remains fixed over time (based on initial data), and a new model, trained with the latest data (`candidate` model) on a weekly basis.
+
+By comparing the performance difference between these two models over time, we can infer whether drift is present. When the fine-tuned model consistently outperforms the fixed base model on new data, it signals that the distribution has shifted and that continuous retraining is necessary for optimal predictive accuracy.
+
+== Monitoring Approach
+
+Monitoring is performed exclusively through the pipeline rather than a dedicated external monitoring service. This setup enables:
+
+- Regular evaluation of drift through evidently
+- Tracking performance of both base and fine-tuned models
+- Automated generation of drift reports as part of routine CI/CD operations
+
+Although this approach ensures consistent oversight during the weekly data refresh cycle, it does not offer real-time monitoring or the granular diagnostics provided by specialized observability platforms. Nonetheless, it remains a practical approach within the project scope and supports effective detection of data drift and early signs of model degradation.
+
+== Results and Findings
+
+The integration of data drift detection into the MLOps pipeline provided valuable insights into the stability of the input data over time. However, the analysis revealed that no significant data drift was detected between the current and candidate datasets. Both models—the fixed base model and the fine-tuned candidate model—performed similarly over time, indicating that the underlying data distribution remained relatively stable during the evaluation period. This might be attributed to the nature of stock market data, which can exhibit periods of stability interspersed with volatility. The pull request @stock_ml_repo_pr12 contains detailed results and visualizations from the drift analysis.
+
+To have a better comprehension of the data drift and to show a sample of the results obtained, a fake data drift has been implemented in branch @stock_ml_repo_branch_artificial_drift. This allows to see how the data drift detection works in practice and to validate the effectiveness of the implemented approach. The following figure shows an example of data drift detected using the fake data drift implementation.
+
+TODO add figure
 
 = Conclusion
 

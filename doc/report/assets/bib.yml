@@ -41,3 +41,15 @@ stock_ml_repo_pr12:
     type: Repository
     title: Stock-ML Repository
     url: https://github.com/JustinFerrara14/Stock-ML
+
+stock_ml_repo_branch_artificial_drift:
+  type: Web
+  title: Stock-ML Repository - Create Artificial Data Drift Branch
+  author: Justin Ferrara
+  url:
+    value: https://github.com/JustinFerrara14/Stock-ML/tree/10-create-artificial-datadrift
+    date: 2025-12-08
+  parent:
+    type: Repository
+    title: Stock-ML Repository
+    url: https://github.com/JustinFerrara14/Stock-ML
