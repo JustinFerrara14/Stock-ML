@@ -1,6 +1,15 @@
 
 #import "template/isc_template_report.typ": *
 
+// Inline code formatting
+#show raw.where(block: false): it => block(
+  fill: rgb(220, 220, 220),
+  radius: 0.5mm,
+  inset: 0.2mm,
+  it,
+)
+#show raw.where(block: true): set text(font: "Cascadia Code")
+
 #show: project.with(
   title: "Stock Price Prediction using Machine Learning",
   sub-title: "Advanced MLOps Topic: Data Drift",
@@ -47,6 +56,12 @@ Finally, *label drift* (or target drift) refers to a change in the distribution 
 Together, these forms of drift—model, data, feature, and label, highlight the importance of dynamic monitoring and adaptation in MLOps. Properly managing them ensures that machine learning models remain accurate, fair, and robust in evolving real-world environments.
 
 TODO more references and go deeper
+
+@evidently_data_drift_article
+@evidently_explainer_drift
+@detecting_data_drift_article_meduim
+@detecting_data_drift_article_mlmastery
+@detecting_data_drift_article_labelyourdata
 
 = Project Scoping
 
@@ -226,7 +241,7 @@ The performance improvements led to significant enhancements in the model's pred
 
 = Data Drift Analysis and Integration
 
-To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with pull request @stock_ml_repo_pr12. The `evidently` package was added as the primary toolkit for measuring drift on the prepared datasets. This enables both quantitative drift metrics and automated reporting in HTML and JSON formats.
+To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with pull request @stock_ml_repo_pr12. The `evidently` package was added as the primary toolkit for measuring drift on the prepared datasets @evidently_data_drift_preset. The package `evidently` was chosen due to its comprehensive suite of drift detection methods, base on multiple algorithms depending on the column type @evidently_explainer_drift.
 
 == Prepared Step Improvements
 
@@ -256,9 +271,14 @@ The pipeline comment summarize the key findings from the JSON report, including:
 - The number of drifted columns (features).
 - The number of columns analyzed (features).
 
-An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12.
+An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12. The @evidently_html_report_no_drift shows the generated report from the `Evidently` package on the original data without drift.
 
-TODO add figure
+#figure(
+  image("./img/originalDataDrift.png"),
+  caption: [
+    Data Drift Report Example from Evidently
+  ],
+) <evidently_html_report_no_drift>
 
 == Data Drift Detection Strategy
 
@@ -282,20 +302,20 @@ Although this approach ensures consistent oversight during the weekly data refre
 
 The integration of data drift detection into the MLOps pipeline provided valuable insights into the stability of the input data over time. However, the analysis revealed that no significant data drift was detected between the current and candidate datasets. Both models—the fixed base model and the fine-tuned candidate model—performed similarly over time, indicating that the underlying data distribution remained relatively stable during the evaluation period. This might be attributed to the nature of stock market data, which can exhibit periods of stability interspersed with volatility. The pull request @stock_ml_repo_pr12 contains detailed results and visualizations from the drift analysis.
 
-To have a better comprehension of the data drift and to show a sample of the results obtained, a fake data drift has been implemented in branch @stock_ml_repo_branch_artificial_drift. This allows to see how the data drift detection works in practice and to validate the effectiveness of the implemented approach. The following figure shows an example of data drift detected using the fake data drift implementation.
+To have a better comprehension of the data drift and to show a sample of the results obtained, a fake data drift has been implemented in branch @stock_ml_repo_branch_artificial_drift. This allows to see how the data drift detection works in practice and to validate the effectiveness of the implemented approach. The @evidently_html_report_simulated_drift shows an example of data drift detected using the fake data drift implementation.
 
-TODO add figure
+#figure(
+  image("./img/simulatedDataDrift.png"),
+  caption: [
+    Artificial Data Drift Report Example from Evidently
+  ],
+) <evidently_html_report_simulated_drift>
 
 = Conclusion
 
 Assessment ??
 
 TODO
-
-
-TODO speak about the performance PR and the results obtained there (added more features, extend the input data to 60 days, etc.)
-
-TODO speak about the data drift results obtained (no data drift detected, both models performed similarly over time, tools used to detect data drift, etc.)
 
 TODO speak about the limitations of the project and possible improvements (more data, more features, other models, etc.)
 

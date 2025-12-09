@@ -53,3 +53,51 @@ stock_ml_repo_branch_artificial_drift:
     type: Repository
     title: Stock-ML Repository
     url: https://github.com/JustinFerrara14/Stock-ML
+
+evidently_data_drift_preset:
+  type: Web
+  title: Data Drift - Overview of the Data Drift Preset.
+  author: Evidently AI
+  url:
+    value: https://docs.evidentlyai.com/metrics/preset_data_drift
+    date: 2025-12-08
+
+evidently_explainer_drift:
+  type: Web
+  title: Data Drift - How data drift detection works
+  author: Evidently AI
+  url:
+    value: https://docs.evidentlyai.com/metrics/explainer_drift
+    date: 2025-12-08
+
+evidently_data_drift_article:
+  type: Web
+  title: What is data drift in ML, and how to detect and handle it
+  author: Evidently AI
+  url:
+    value: https://www.evidentlyai.com/ml-in-production/data-drift
+    date: 2025-12-08
+
+detecting_data_drift_article_meduim:
+  type: Web
+  title: Detecting Data Drift - Tools, Techniques, and Best Practices for 2025
+  author: SymuFolk
+  url:
+    value: https://medium.com/@Symufolk/detecting-data-drift-tools-techniques-and-best-practices-for-2025-d0d34b863c3e
+    date: 2025-12-08
+
+detecting_data_drift_article_mlmastery:
+  type: Web
+  title: Detecting & Handling Data Drift in Production
+  author: Jayita Gulati
+  url:
+    value: https://machinelearningmastery.com/detecting-handling-data-drift-in-production/
+    date: 2025-12-08
+
+detecting_data_drift_article_labelyourdata:
+  type: Web
+  title: Data Drift - Detection and Monitoring Techniques
+  author: Karyna Naminas
+  url:
+    value: https://labelyourdata.com/articles/machine-learning/data-drift
+    date: 2025-12-08
