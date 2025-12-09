@@ -91,7 +91,7 @@ Monitoring tools to track model drift (e.g., Evidently AI, Prometheus + Grafana,
 
 The project operates under multiple constraints and risks that could influence its success. Time limitations may restrict the extent of model experimentation and deployment testing, while limited financial domain expertise could block accurate interpretation of market-related outcomes. Additionally, access to reliable financial data may be limited or require paid sources, and the technical complexity of implementing MLOps processes such as continuous integration, monitoring, and retraining adds further challenges.
 
-These constraints comes with risks including potential costs associated with cloud technologies and APIs, the inherent instability of models due to unpredictable market dynamics, and the possibility of overfitting, which could reduce the model's ability to generalize effectively to unseen market conditions.
+These constraints come with risks including potential costs associated with cloud technologies and APIs, the inherent instability of models due to unpredictable market dynamics, and the possibility of overfitting, which could reduce the model's ability to generalize effectively to unseen market conditions.
 
 = Fisrt Version
 
@@ -125,11 +125,11 @@ To acquire the necessary data for stock price prediction, we used the #link("htt
 - Tesla, Inc. (TSLA)
 - Taiwan Semiconductor Manufacturing Company Ltd. (TSM)
 
-The data spans from 11/10/2020 to 11/07/2025 for each stocks, providing a comprehensive dataset for training and evaluating the machine learning models.
+The data spans from 11/10/2020 to 11/07/2025 for each stock, providing a comprehensive dataset for training and evaluating the machine learning models.
 
 === Data Preprocessing
 
-The preprocessing steps involved cleaning the data and transforming the data into a suitable format for modeling. We performed the following preprocessing tasks:
+The preprocessing steps involved cleaning the data and transforming the data into a suitable format for modelling. We performed the following preprocessing tasks:
 - Checking for missing values and handling them appropriately (e.g., imputation or removal).
 - Converting the closing prices to float data variables, representing the variation in percent from the previous closing price.
 - Normalizing the data to ensure that all features are on a similar scale, which is important for machine learning algorithms.
@@ -137,7 +137,7 @@ The preprocessing steps involved cleaning the data and transforming the data int
 
 === Data Storage
 
-The raw and preprocessed data are stored in a structured format using CSV files and DVC for version control. This allows us to track changes in the data over time and ensures reproducibility in our experiments. The data is stored in a dedicated S3 bucket for easy access and scalability (as shown in the tutorial #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/]).
+The raw and pre-processed data are stored in a structured format using CSV files and DVC for version control. This allows us to track changes in the data over time and ensures reproducibility in our experiments. The data is stored in a dedicated S3 bucket for easy access and scalability (as shown in the tutorial #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/]).
 
 == ML Model Development
 
@@ -149,7 +149,7 @@ TODO
 
 === Model Training and Validation
 
-The model is trained using the preprocessed data, which includes the stock closing prices and other relevant features. We used LSTM (Long Short-Term Memory) neural networks, which are well-suited for time series data like stock prices. The training process involves optimizing the model's parameters to minimize the prediction error on the training set.
+The model is trained using the pre-processed data, which includes the stock closing prices and other relevant features. We used LSTM (Long Short-Term Memory) neural networks, which are well-suited for time series data like stock prices. The training process involves optimizing the model's parameters to minimize the prediction error on the training set.
 
 The validation set is used to tune hyperparameters and prevent overfitting.
 
@@ -157,7 +157,7 @@ TODO more details
 
 === Model Evaluation
 
-The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared (R²). These metrics provide insights into how well the model predicts stock prices compared to actual values. We also perform backtesting to assess the model's performance over historical data.
+The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared (R²). These metrics provide insights into how well the model predicts stock prices compared to actual values. We also perform back testing to assess the model's performance over historical data.
 
 Here is a brief explanation of the evaluation metrics used:
 - The Mean Absolute Error (MAE) measures the average absolute difference between predicted and actual values, showing how far predictions are from reality on average.
@@ -170,7 +170,7 @@ The best and worst predictions are visualized using plots to illustrate the mode
 
 To deploy the model, we use the #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/] guidelines to set up a base environment for deployment.
 
-The model is trained locally. On every pull request, the model is retrained in a Kubernetes pod using GitHub Actions. The trained model is then containerized using Docker and deployed to a cloud environment (e.g., AWS, GCP, or Azure) for scalability and accessibility. This setup correspond to the #link("https://mlops.swiss-ai-center.ch/part-3-serve-and-deploy-the-model/chapter-37-use-a-self-hosted-runner-for-the-cicd-pipeline/")[Chapter 3.7] of the MLOps guide.
+The model is trained locally. On every pull request, the model is retrained in a Kubernetes pod using GitHub Actions. The trained model is then containerized using Docker and deployed to a cloud environment (e.g., AWS, GCP, or Azure) for scalability and accessibility. This setup corresponds to the #link("https://mlops.swiss-ai-center.ch/part-3-serve-and-deploy-the-model/chapter-37-use-a-self-hosted-runner-for-the-cicd-pipeline/")[Chapter 3.7] of the MLOps guide.
 
 TODO
 
@@ -238,12 +238,12 @@ To avoid overfitting and improve generalization, we increased the dropout rate i
 
 The performance improvements led to significant enhancements in the model's predictive accuracy and reliability. The key results are summarized in the pull request @stock_ml_repo_pr10, which includes:
 - A reduction in Mean Absolute Error (MAE) from 1.87 to 0.66.
-- An decrease in R2 Score from 0.00 to -1.19 (which is not an improvement, but expected due to the nature of stock price prediction).
+- An decrease in R2 Score from 0.00 to -1.19 (which is not an improvement but expected due to the nature of stock price prediction).
 - Visualizations comparing the model's predictions before and after the improvements, demonstrating better alignment with actual stock prices.
 
 = Data Drift Analysis and Integration
 
-To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with pull request @stock_ml_repo_pr12. The `evidently` package was added as the primary toolkit for measuring drift on the prepared datasets @evidently_data_drift_preset. The package `evidently` was chosen due to its comprehensive suite of drift detection methods, base on multiple algorithms depending on the column type @evidently_explainer_drift.
+To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with pull request @stock_ml_repo_pr12. The `Evidently` package was added as the primary toolkit for measuring drift on the prepared datasets @evidently_data_drift_preset. The package `Evidently` was chosen due to its comprehensive suite of drift detection methods, based on multiple algorithms depending on the column type @evidently_explainer_drift.
 
 == Prepared Step Improvements
 
@@ -259,7 +259,7 @@ These datasets are stored in `data/prepared/` and `data/prepared_candidate/` res
 A new data drift detection step was added to the workflow. This component:
 
 - Loads the current and candidate prepared datasets.
-- Uses evidently to compute drift metrics across all features.
+- Uses Evidently to compute drift metrics across all features.
 - Generates:
   - An HTML report for human-readable inspection.
   - A JSON report containing structured drift statistics suitable for automated analysis.
@@ -268,7 +268,7 @@ A new data drift detection step was added to the workflow. This component:
 
 This approach ensures that every potential model update is automatically preceded by a drift evaluation that highlights feature-level changes.
 
-The pipeline comment summarize the key findings from the JSON report, including:
+The pipeline comment summarizes the key findings from the JSON report, including:
 - If a significant drift was detected for any features.
 - The number of drifted columns (features).
 - The number of columns analyzed (features).
@@ -284,7 +284,7 @@ An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12.
 
 == Data Drift Detection Strategy
 
-The first step in our data drift detection strategy is to compare the statistical distributions of features between the current and candidate datasets. Using evidently's built-in statistical tests (e.g., Kolmogorov-Smirnov test for continuous features, Chi-squared test for categorical features), we assess whether significant changes have occurred in the input data over time.
+The first step in our data drift detection strategy is to compare the statistical distributions of features between the current and candidate datasets. Using Evidently built-in statistical tests (e.g., Kolmogorov-Smirnov test for continuous features, Chi-squared test for categorical features), we assess whether significant changes have occurred in the input data over time.
 
 The second step to detect data drift involves a dual-model strategy within the pipeline. The idea is to train and evaluate two models in parallel: a base model that remains fixed over time (based on initial data), and a new model, trained with the latest data (`candidate` model) on a weekly basis.
 
@@ -294,7 +294,7 @@ By comparing the performance difference between these two models over time, we c
 
 Monitoring is performed exclusively through the pipeline rather than a dedicated external monitoring service. This setup enables:
 
-- Regular evaluation of drift through evidently
+- Regular evaluation of drift through Evidently
 - Tracking performance of both base and fine-tuned models
 - Automated generation of drift reports as part of routine CI/CD operations
 
