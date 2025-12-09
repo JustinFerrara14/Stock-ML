@@ -157,12 +157,12 @@ TODO more details
 
 === Model Evaluation
 
-The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared (R²). These metrics provide insights into how well the model predicts stock prices compared to actual values. We also perform back testing to assess the model's performance over historical data.
+The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared ($R^2$). These metrics provide insights into how well the model predicts stock prices compared to actual values. We also perform back testing to assess the model's performance over historical data.
 
 Here is a brief explanation of the evaluation metrics used:
 - The Mean Absolute Error (MAE) measures the average absolute difference between predicted and actual values, showing how far predictions are from reality on average.
 - The Root Mean Squared Error (RMSE) calculates the square root of the average squared errors, giving more weight to larger mistakes and highlighting significant prediction deviations.
-- The R-squared (R²) indicates how well the model explains the variance in the actual data, with values closer to 1 representing better predictive accuracy.
+- The R-squared ($R^2$) indicates how well the model explains the variance in the actual data, with values closer to 1 representing better predictive accuracy.
 
 The best and worst predictions are visualized using plots to illustrate the model's performance and to better understand its strengths and weaknesses.
 
@@ -217,13 +217,17 @@ As the model is deployed on GKE, it can easily scale based on demand. Kubernetes
 
 = Performance Improvements
 
-As seen in the previous section, the initial model@stock_ml_repo_pr6 was not performing well, with high error rates and low predictive accuracy. To address these issues, we implemented several performance improvements to enhance the model's capabilities, described in detail in PR @stock_ml_repo_pr10.
+TODO speak in first version about the initial model performance
+
+TODO explain who's done what
+
+As seen in the previous section, the initial model@stock_ml_repo_pr6 was not performing well, with high error rates and low predictive accuracy. To address these issues, we implemented several performance improvements to enhance the model's capabilities, described in detail in the pull request @stock_ml_repo_pr10.
 
 == Feature Engineering Enhancements
 
 To improve the model's performance, we extended the input data to include the past 60 days of stock prices instead of just 30 days. This provided the model with more historical context, allowing it to capture longer-term trends and patterns in stock price movements.
 
-We also added new features derived from the existing data, to provide additional insights for the model. These features are described in the following table:
+We also added new features derived from the existing data, to provide additional insights for the model. These features are described in the following list:
 - *Short-term trend indicators:* Computed 5-day and 10-day simple moving averages (SMA_5, SMA_10) to smooth short-horizon fluctuations and capture underlying price trends.
 - *Recent-information-weighted trend measure:* Incorporated a 5-day exponential moving average (EMA_5) to assign greater weight to recent observations and enhance sensitivity to short-term market movements.
 - *Volatility approximation:* Derived a High-Low price spread feature as a proxy for intraday volatility.
@@ -232,46 +236,60 @@ We also added new features derived from the existing data, to provide additional
 
 == Model Architecture Optimization
 
-To avoid overfitting and improve generalization, we increased the dropout rate in the LSTM layers from 0.1 to 0.2. This adjustment helped the model to better handle unseen data by preventing it from relying too heavily on specific neurons during training.
+To avoid overfitting and improve generalization, we increased the dropout rate in the LSTM layers from `0.1` to `0.2`. This adjustment helped the model to better handle unseen data by preventing it from relying too heavily on specific neurons during training.
 
 == Results
 
 The performance improvements led to significant enhancements in the model's predictive accuracy and reliability. The key results are summarized in the pull request @stock_ml_repo_pr10, which includes:
-- A reduction in Mean Absolute Error (MAE) from 1.87 to 0.66.
-- An decrease in R2 Score from 0.00 to -1.19 (which is not an improvement but expected due to the nature of stock price prediction).
+- A reduction in MAE from 1.87 to 0.66.
+- An decrease in $R^2$ score from 0.00 to -1.19 (which is not an improvement but expected due to the nature of stock price prediction).
 - Visualizations comparing the model's predictions before and after the improvements, demonstrating better alignment with actual stock prices.
 
 = Data Drift Analysis and Integration
 
-To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with pull request @stock_ml_repo_pr12. The `Evidently` package was added as the primary toolkit for measuring drift on the prepared datasets @evidently_data_drift_preset. The package `Evidently` was chosen due to its comprehensive suite of drift detection methods, based on multiple algorithms depending on the column type @evidently_explainer_drift.
+To strengthen the robustness of the stock-prediction workflow, data drift detection was integrated directly into the MLOps pipeline with the pull request @stock_ml_repo_pr12. The `Evidently` package was added as the primary toolkit for measuring drift on the prepared datasets @evidently_data_drift_preset. The package `Evidently` was chosen due to its comprehensive suite of drift detection methods, based on multiple algorithms depending on the column type @evidently_explainer_drift.
+
+== Candidate Dataset <candidate_data_policy>
+
+The current dataset is the one used to train the active model, while the candidate dataset is the newly ingested data that will be used to retrain a new model. To generate the candidate dataset, the following options were considered:
+- Adding the latest week's data to the current dataset.
+- Adding the latest week's data while removing the oldest week's data to maintain a consistent dataset size.
+- Using only the latest week's data as the candidate dataset.
+
+The first option was selected to maximize the amount of data available for training the new model, while still allowing for effective drift detection by comparing the distributions of features between the current and candidate datasets. The second option can be considered if we don't want to increase the dataset size over time or if we want to focus on more recent data and avoid old macroeconomic conditions that may no longer be relevant. The third option was not selected as it would limit the amount of data available for training the new model, potentially leading to poorer performance.
+
+== Data Drift Detection Strategy
+
+The first step in our data drift detection strategy is to compare the statistical distributions of features between the current and candidate datasets. Using Evidently built-in statistical tests (e.g., Kolmogorov-Smirnov test for continuous features, Chi-squared test for categorical features), we assess whether significant changes have occurred in the input data over time.
+
+The second step to detect data drift involves a dual-model strategy within the pipeline. The idea is to train and evaluate two models in parallel: a base model that remains fixed over time (based on initial data), and a new model, trained with the latest data (`candidate` model) on a weekly basis.
+
+By comparing the performance difference between these two models over time, we can infer whether drift is present. When the fine-tuned model consistently outperforms the fixed base model on new data, it signals that the distribution has shifted and that continuous retraining is necessary for optimal predictive accuracy.
 
 == Prepared Step Improvements
 
-The data preparation stage was expanded to output two parallel datasets:
+To facilitate effective drift detection, the data preparation step was enhanced to generate two distinct datasets:
 
-- Candidate data: the newly prepared dataset generated from the latest weekly ingestion (from folder `data/raw_candidate/`).
-- Current data: the previously accepted dataset used for training the active model (from folder `data/raw/`).
+- Candidate data: the newly prepared dataset generated using the policy described in @candidate_data_policy (folder `data/raw_candidate/`).
+- Current data: the previously accepted dataset used for training the active model (folder `data/raw/`).
 
 These datasets are stored in `data/prepared/` and `data/prepared_candidate/` respectively, allowing for direct comparison of feature distributions over time.
 
 == Pipeline Enhancements
 
-A new data drift detection step was added to the workflow. This component:
+A new data drift detection step was added to the workflow. This step performs the following actions:
 
-- Loads the current and candidate prepared datasets.
+- Loads the current and candidate datasets.
 - Uses Evidently to compute drift metrics across all features.
-- Generates:
-  - An HTML report for human-readable inspection.
-  - A JSON report containing structured drift statistics suitable for automated analysis.
-- Stores both reports as pipeline artifacts.
-- Inserts a summary of the JSON report into pipeline comments for quick visibility during CI/CD reviews.
+- Generates a HTML and JSON report summarizing the drift analysis.
+- Inserts a summary of the JSON report into the pipeline comment containing:
+  - Whether significant drift was detected for any features.
+  - The number of drifted columns (features).
+  - The number of columns analyzed (features).
+- Train both the base (current) and candidate models, allowing for performance comparison.
+- Insert model performance metrics into the pipeline comment for both models.
 
-This approach ensures that every potential model update is automatically preceded by a drift evaluation that highlights feature-level changes.
-
-The pipeline comment summarizes the key findings from the JSON report, including:
-- If a significant drift was detected for any features.
-- The number of drifted columns (features).
-- The number of columns analyzed (features).
+This approach ensures that every potential model update is accompanied by a thorough drift analysis, enabling informed decisions about model retraining and deployment.
 
 An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12. The @evidently_html_report_no_drift shows the generated report from the `Evidently` package on the original data without drift.
 
@@ -282,17 +300,9 @@ An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12.
   ],
 ) <evidently_html_report_no_drift>
 
-== Data Drift Detection Strategy
-
-The first step in our data drift detection strategy is to compare the statistical distributions of features between the current and candidate datasets. Using Evidently built-in statistical tests (e.g., Kolmogorov-Smirnov test for continuous features, Chi-squared test for categorical features), we assess whether significant changes have occurred in the input data over time.
-
-The second step to detect data drift involves a dual-model strategy within the pipeline. The idea is to train and evaluate two models in parallel: a base model that remains fixed over time (based on initial data), and a new model, trained with the latest data (`candidate` model) on a weekly basis.
-
-By comparing the performance difference between these two models over time, we can infer whether drift is present. When the fine-tuned model consistently outperforms the fixed base model on new data, it signals that the distribution has shifted and that continuous retraining is necessary for optimal predictive accuracy.
-
 == Monitoring Approach
 
-Monitoring is performed exclusively through the pipeline rather than a dedicated external monitoring service. This setup enables:
+The monitoring is performed exclusively through the pipeline rather than a dedicated external monitoring service. This setup enables:
 
 - Regular evaluation of drift through Evidently
 - Tracking performance of both base and fine-tuned models
@@ -302,7 +312,7 @@ Although this approach ensures consistent oversight during the weekly data refre
 
 == Results and Findings
 
-The integration of data drift detection into the MLOps pipeline provided valuable insights into the stability of the input data over time. However, the analysis revealed that no significant data drift was detected between the current and candidate datasets. Both models—the fixed base model and the fine-tuned candidate model—performed similarly over time, indicating that the underlying data distribution remained relatively stable during the evaluation period. This might be attributed to the nature of stock market data, which can exhibit periods of stability interspersed with volatility. The pull request @stock_ml_repo_pr12 contains detailed results and visualizations from the drift analysis.
+The integration of data drift detection into the MLOps pipeline provided valuable insights into the stability of the input data over time. However, the analysis revealed that no significant data drift was detected between the current and candidate datasets. Both models, the fixed base model and the fine-tuned candidate model performed similarly over time, indicating that the underlying data distribution remained relatively stable during the evaluation period. This might be attributed to the nature of stock market data, which can exhibit periods of stability interspersed with volatility. The pull request @stock_ml_repo_pr12 contains detailed results and visualizations from the drift analysis.
 
 To have a better comprehension of the data drift and to show a sample of the results obtained, a fake data drift has been implemented in branch @stock_ml_repo_branch_artificial_drift. This allows to see how the data drift detection works in practice and to validate the effectiveness of the implemented approach. The @evidently_html_report_simulated_drift shows an example of data drift detected using the fake data drift implementation.
 
