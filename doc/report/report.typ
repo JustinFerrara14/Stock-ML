@@ -35,11 +35,11 @@
 
 = Introduction
 
-The objective is to create a simple predictive market model. The model would take as input the stock closing price for each month, with the goal of predicting the closing prices for the next 5 days. The dataset would consist of the past 5 year's data for the most popular technology stocks in the NASDAQ index.
+The objective of this project is to create a simple predictive model capable of estimating future stock prices. The model uses historical monthly closing prices as input and predicts the closing prices for the following five days. The dataset consists of five years of historical data for several major technology companies listed on the NASDAQ.
 
-As an advanced MLOps problem, we will study the data drift in our results. The goal is to fine-tune our model every week using the new data from the previous week. We will then compare the performance of our models over time. The objective here is to observe whether the performance of older models degrades over time compared to their updated fine-tuned versions. (Model drift)
+As part of the advanced MLOps component, the project focuses on analysing data drift and its impact on model performance. Each week, a data drift analysis is done as well as a new model is re-trained with newly collected data. The performance of the newly created model is then compared to older versions. This approach allows us to evaluate whether previously trained models degrade over time as market conditions evolve. The goal is to understand how data drift affects predictive accuracy and to highlight the value of continuous monitoring and retraining within an MLOps workflow.
 
-TODO more references and go deeper about the results obtained
+The results of this project will provide insights into the challenges of stock price prediction and the importance of managing data drift in machine learning systems deployed in dynamic environments.
 
 #pagebreak()
 
