@@ -45,6 +45,8 @@ TODO more references and go deeper about the results obtained
 
 = Advanced Topic - Data Drift
 
+The following section provides an in-depth explanation of model drift, data drift, feature drift, and label drift, along with methods for detecting data drift in machine learning systems @evidently_data_drift_article @evidently_explainer_drift @detecting_data_drift_article_meduim @detecting_data_drift_article_mlmastery @detecting_data_drift_article_labelyourdata.
+
 In machine learning systems, *model drift* (also known as concept drift) refers to the degradation of a model's predictive performance over time due to changes in the underlying data distribution or relationships between input and output variables. This phenomenon occurs because the model was trained on past data that may no longer represent current real-world conditions. In financial forecasting, for instance, market trends, investor behavior, or economic indicators may evolve, causing previously learned patterns to become outdated. Detecting and managing model drift is therefore critical to maintaining accuracy and reliability in predictive systems.
 
 One key source of model drift is *data drift*, which occurs when the statistical properties of input features (the X variables) change over time. For example, if stock trading volumes or volatility levels shift due to external economic events, the distribution of input data no longer aligns with what the model originally learned. Data drift can be measured through statistical tests such as the Kolmogorov-Smirnov test or by comparing feature distributions between training and production data. Regular monitoring allows to identify when the input data environment has shifted significantly, prompting the need for model retraining or adjustment.
@@ -55,13 +57,13 @@ Finally, *label drift* (or target drift) refers to a change in the distribution 
 
 Together, these forms of drift—model, data, feature, and label, highlight the importance of dynamic monitoring and adaptation in MLOps. Properly managing them ensures that machine learning models remain accurate, fair, and robust in evolving real-world environments.
 
-TODO more references and go deeper
+== Data Drift Detection
 
-@evidently_data_drift_article
-@evidently_explainer_drift
-@detecting_data_drift_article_meduim
-@detecting_data_drift_article_mlmastery
-@detecting_data_drift_article_labelyourdata
+Data drift detection involves monitoring changes in the statistical properties of input features over time. Common techniques include:
+- Statistical tests: Methods like the Kolmogorov-Smirnov test or Chi-squared test compare feature distributions between training and production data to identify significant shifts @evidently_data_drift_article @evidently_explainer_drift.
+- Distance metrics: Measures such as Kullback-Leibler divergence or Jensen-Shannon divergence quantify the difference between probability distributions of features over time @evidently_data_drift_article @evidently_explainer_drift.
+- Visualization: Tools like histograms, box plots, or density plots help visualize changes in feature distributions @detecting_data_drift_article_mlmastery.
+- Machine learning-based methods: Unsupervised models (e.g., autoencoders) can learn normal data patterns and flag deviations as potential drift @detecting_data_drift_article_mlmastery.
 
 = Project Scoping
 
