@@ -313,11 +313,11 @@ To have a better comprehension of the data drift and to show a sample of the res
 
 = Conclusion
 
-Assessment ??
+This project demonstrated how a complete MLOps workflow can support the development of a stock price prediction model, from data acquisition and preprocessing to training, deployment, and automated monitoring. Although stock forecasting remains challenging and the model's predictive performance is limited, the improvements introduced—especially in feature engineering and model tuning—led to more stable results.
 
-TODO
+Data drift detection was successfully integrated into the pipeline using Evidently. While no real drift was observed in the available data, the artificial drift experiment confirmed that the system can identify and report distribution changes when they occur. This validates the monitoring approach and ensures that future updates can be assessed reliably.
 
-TODO speak about the limitations of the project and possible improvements (more data, more features, other models, etc.)
+The project's main limitations are the restricted feature set and the simplicity of the model architecture. Future work could include richer financial indicators, macroeconomic variables, more advanced models, and real-time monitoring. Despite these limitations, the project provides a solid foundation for an automated, drift-aware forecasting pipeline.
 
 #pagebreak()
 
