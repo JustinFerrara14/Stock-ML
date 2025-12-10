@@ -109,14 +109,14 @@ kolmogorov-smirnov-test-ks-test:
   url:
     value: https://www.geeksforgeeks.org/machine-learning/kolmogorov-smirnov-test-ks-test/
     date: 2025-11-07
-  
+
 long-short-term-memory-intro:
   type: Web
   title: What is LSTM? Introduction to Long Short-Term Memory
   author: Rebeen Hamad
   url:
     value: https://medium.com/@rebeen.jaff/what-is-lstm-introduction-to-long-short-term-memory-66bd3855b9ce
-    date: 2023-12-03 
+    date: 2023-12-03
 
 model_evaluation_metrics_article:
   type: Web
@@ -125,3 +125,11 @@ model_evaluation_metrics_article:
   url:
     value: https://medium.com/@kavyasrirelangi100/understanding-model-evaluation-metrics-for-machine-learning-160d385b72c5
     date: 2024-06-29
+
+mlops_guide:
+  type: Web
+  title: A guide to MLOps
+  author: Swiss AI Center
+  url:
+    value: https://mlops.swiss-ai-center.ch/
+    date: 2025-11-07

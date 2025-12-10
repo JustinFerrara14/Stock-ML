@@ -41,6 +41,14 @@ As part of the advanced MLOps component, the project focuses on analysing data d
 
 The results of this project will provide insights into the challenges of stock price prediction and the importance of managing data drift in machine learning systems deployed in dynamic environments.
 
+TODO put elsewhere the following
+
+The contributions of each team member are as follows:
+- Justin Ferrara: Data acquisition, preprocessing, initial model development.
+- Luca Da Silva: Data drift research, pipeline integration, report writing.
+- Rafael Cardoso: Research on various topics and report writing.
+- Thomas Maksimous: Report writing and making presentations.
+
 #pagebreak()
 
 = Advanced Topic - Data Drift
@@ -71,36 +79,30 @@ Data drift detection aims to identify changes in the statistical properties of t
 
 = Project Scoping
 
-The project aims to develop a machine learning model to predict short-term stock closing prices, while implementing a comprehensive MLOps lifecycle to ensure the model's robustness and adaptability over time.
+The project aims to develop a machine learning model to predict short-term stock closing price variations, while implementing a comprehensive MLOps lifecycle to ensure the model's robustness and adaptability over time.
 
 == Objectives
 
-The objective of this project is to predict the daily closing stock value of different companies using machine learning techniques. The purpose is to provide useful insights to investors, helping them make more informed and data-driven investment decisions. The key problem to solve is the accurate prediction of stock prices, which vary due to market volatility and numerous influencing factors.
+The objective of this project is to predict the daily closing price variation of different companies using machine learning techniques. The purpose is to provide useful insights to investors. The key problem to solve is the accurate prediction of stock prices, which vary due to market volatility and numerous influencing factors.
 
-The advanced MLOps topic covered in this project is model drift detection and mitigation, with a specific focus on data drift and feature drift.In this context, we will monitor how changes in the input data distribution over time affect the model's performance. The main goal is to maintain the model's reliability and adaptability, ensuring it remains robust as market conditions evolve. 
+The advanced MLOps topic covered in this project is model drift detection and mitigation, with a specific focus on data drift and feature drift.In this context, we will monitor how changes in the input data distribution over time affect the model's performance. The main goal is to maintain the model's reliability and adaptability, ensuring it remains robust as market conditions evolve.
 
 == Requirements
 
 This project will require the following resources:
 
-- Financial datasets containing daily stock data (open, close, high, low, volume, etc.) with sufficient historical depth. ( https://www.nasdaq.com)
+- Financial datasets containing daily stock data (open, close, high, low, volume, etc.) with sufficient historical depth.
 - Development environment for data science and MLOps:
   - Python (pandas, scikit-learn, TensorFlow/PyTorch)
-  - DVC or MLflow for experiment tracking and versioning
+  - DVC for experiment tracking and versioning
   - BentoML for model packaging and deployment
   - Docker and GitHub Actions for CI/CD
   - Cloud deployment environment (Google Cloud)
   - Monitoring tools to track model drift (Evidently AI)
 
-== Project Constraints and Associated Risks
-
-The project operates under multiple constraints and risks that could influence its success. Time limitations may restrict the extent of model experimentation and deployment testing, while limited financial domain expertise could block accurate interpretation of market-related outcomes. Additionally, access to reliable financial data may be limited or require paid sources, and the technical complexity of implementing MLOps processes such as continuous integration, monitoring, and retraining adds further challenges.
-
-These constraints come with risks including potential costs associated with cloud technologies and APIs, the inherent instability of models due to unpredictable market dynamics, and the possibility of overfitting, which could reduce the model's ability to generalize effectively to unseen market conditions.
-
 = First version of the ML model
 
-This section presents the first version of the stock price prediction project, covering the data engineering pipeline, the machine learning model, and its deployment within an MLOps workflow.
+This section presents the first version of the ML model, covering the data engineering pipeline, the machine learning model, its deployment within an MLOps workflow and the evaluation of its performance.
 
 == Data engineering
 
@@ -132,52 +134,40 @@ To acquire the necessary data for stock price prediction, we used the #link("htt
 
 The data spans from 11/10/2020 to 11/07/2025 for each stock, providing a comprehensive dataset for training and evaluating the machine learning models.
 
-=== Data preprocessing
+=== Data preprocessing <data_preprocessing_step>
 
 The preprocessing steps aim to clean the raw data and transform it into a format suitable for time series modelling. We performed the following operations:
 
 - Checking for missing values and handling them appropriately (either by removal of incomplete rows or, when necessary, by simple imputation strategies).
 - Converting the closing prices to float data variables, representing the variation in percent from the previous closing price.
 - Normalizing the numerical features so that they lie on comparable scales, which is important for neural network training stability.
-- Sorting the data chronologically by date and splitting it into training, validation and test sets in a time-respecting manner, in order to evaluate the model’s performance on unseen future periods.
+- Sorting the data chronologically by date and splitting it into training, validation and test sets in a time-respecting manner, in order to evaluate the model's performance on unseen future periods.
 
 === Data storage
 
 The raw and preprocessed datasets are stored in CSV format and tracked with DVC for data version control. This setup makes it possible to reproduce experiments, roll back to previous dataset versions and keep data, code and model artifacts aligned over time.
 
-The data is stored in a dedicated S3 bucket for easy access and scalability (as shown in the tutorial #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/]).
+The data is stored in a dedicated S3 bucket for easy access and scalability (as shown in the tutorial @mlops_guide).
 
 == Model development
 
-To develop the first version of the stock price prediction model, we followed the #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/
-] guide to set up an end-to-end MLOps pipeline. This includes sequence construction, model training, evaluation and preparation for deployment.
+To develop the first version of the stock price prediction model, we followed the MLOps guide @mlops_guide to set up an end-to-end MLOps pipeline. This includes sequence construction, model training, evaluation and preparation for deployment.
 
 === Feature engineering
 
-For this initial model, we adopt a minimal yet structured feature engineering strategy tailored to time series forecasting.
-
-For each stock, the daily time series is transformed into supervised learning sequences using a sliding-window approach:
-
-Input (features):
--	Open
--	High
--	Low
--	Volume
-
-These variables were chosen because they are standard market indicators and provide complementary information about the price dynamics and trading activity for each day. The sliding-window transformation allows the model to learn temporal patterns over multiple consecutive days rather than from isolated observations. 
+We use a minimal feature engineering approach. Daily variations of closing stock prices (as explained in @data_preprocessing_step) are transformed into supervised learning sequences using a sliding-window method. This simple feature set serves as a baseline model.
 
 === Model training and validation
 
-The model used in this first version is a Long Short-Term Memory (LSTM) neural network designed for sequence-to-sequence regression. LSTMs are a type of recurrent neural network that incorporate memory cells and gating mechanisms, enabling them to capture temporal dependencies over longer sequences and to mitigate the vanishing gradient problem. This makes them particularly suitable for time series forecasting tasks. @long-short-term-memory-intro
+The model used in this first version is a Long Short-Term Memory (LSTM) neural network designed for sequence-to-sequence regression. LSTMs are a type of recurrent neural network that incorporate memory cells and gating mechanisms, enabling them to capture temporal dependencies over longer sequences and to mitigate the vanishing gradient problem. This makes them particularly suitable for time series forecasting tasks @long-short-term-memory-intro.
 
-The model is trained, with the features mentioned before. We used Long-Short Term Memory (LSTM) neural networks.
-The training process optimizes the model parameters to minimize the prediction error on the training set, using a suitable loss function for regression (e.g. mean squared error).
+The model is trained, with the features mentioned before. The training process optimizes the model parameters to minimize the prediction error on the training set, using Mean Squared Error (MSE) as the loss function and the Adam optimizer.
 
-A validation set is used to monitor the model’s performance during training, tune hyperparameters (such as the number of LSTM layers, hidden size, dropout rate and learning rate) and reduce the risk of overfitting.
+A validation set is used to monitor the model's performance during training, tune hyperparameters (such as the number of LSTM layers, hidden size, dropout rate and learning rate) and reduce the risk of overfitting.
 
 === Model Evaluation
 
-The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared ($R^2$). These metrics provide insights into how well the model predicts stock prices compared to actual values. We also perform back testing to assess the model's performance over historical data.
+The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared ($R^2$). These metrics provide insights into how well the model predicts stock prices compared to actual values.
 
 Here is a brief explanation of the evaluation metrics used:
 - The Mean Absolute Error (MAE) measures the average absolute difference between predicted and actual values, showing how far predictions are from reality on average.
@@ -188,26 +178,26 @@ The best and worst predictions are visualized using plots to illustrate the mode
 
 == Deployment
 
-To deploy the model, we use the #link("https://mlops.swiss-ai-center.ch/")[https://mlops.swiss-ai-center.ch/] guidelines to set up a base environment for deployment.
+To deploy the model, we use the MLOps guidelines to set up a base environment for deployment @mlops_guide.
 
 The model is initially trained locally. On every pull request, the full training pipeline is reproduced inside a Kubernetes pod using GitHub Actions and a self-hosted runner. Once the model is trained and validated, it is packaged with BentoML, containerised with Docker and deployed on Google Cloud Platform (GCP), following the approach described in #link("https://mlops.swiss-ai-center.ch/part-3-serve-and-deploy-the-model/chapter-37-use-a-self-hosted-runner-for-the-cicd-pipeline/")[Chapter
- 3.7] of the MLOps guide.
+  3.7] of the MLOps guide @mlops_guide.
 
 === CI/CD Pipeline
 
-The CI/CD pipeline automates the lifecycle of model training, evaluation and deployment using GitHub Actions, DVC, CML and BentoML. It runs training workloads on a self-hosted runner and uses GitHub-hosted runners for lighter deployment tasks.
+The CI/CD pipeline automates the lifecycle of model training, evaluation and deployment using GitHub Actions, DVC, CML and BentoML. It runs training workloads on a self-hosted runner in a Kubernetes cluster.
 
 The workflow is triggered automatically when:
 
-- Code is pushed to the main branch,
-- A pull request is opened, or
+- Code is pushed to the main branch
+- A pull request is opened
 - The workflow is manually started from the GitHub Actions interface.
 
 It consists of two main jobs:
 
 1. Train and Report (train-and-report)
 
-   Triggered on pull requests, this job automates model retraining and experiment reporting:
+  Triggered on pull requests, this job automates model retraining and experiment reporting:
 
   - Checks out the repository and sets up Python 3.12.
   - Installs dependencies and authenticates with Google Cloud.
@@ -220,15 +210,15 @@ It consists of two main jobs:
 
 2. Publish and Deploy (publish-and-deploy)
 
-Triggered when changes are merged into the main branch, this job:
+  Triggered when changes are merged into the main branch, this job:
 
-- Checks out the repository and installs dependencies.
-- Authenticates with Google Cloud and reproduces the final training pipeline via DVC.
-- Imports and builds the BentoML model artifact.
-- Containerises the Bento service and pushes the Docker image to Google Container Registry.
-- Retrieves credentials for the Google Kubernetes Engine (GKE) cluster.
-- Updates the Kubernetes deployment manifest to reference the new image version (tagged with the Git SHA).
-- Applies the updated deployment and service configuration on the cluster to roll out the new model version.
+  - Checks out the repository and installs dependencies.
+  - Authenticates with Google Cloud and reproduces the final training pipeline via DVC.
+  - Imports and builds the BentoML model artifact.
+  - Containerises the Bento service and pushes the Docker image to Google Container Registry.
+  - Retrieves credentials for the Google Kubernetes Engine (GKE) cluster.
+  - Updates the Kubernetes deployment manifest to reference the new image version (tagged with the Git SHA).
+  - Applies the updated deployment and service configuration on the cluster to roll out the new model version.
 
 === Infrastructure
 
@@ -240,11 +230,16 @@ The model itself is packaged as a BentoML service and built into a Docker image.
 
 Because the model is deployed on GKE, it can be scaled horizontally by increasing the number of replicas of the serving pod. Kubernetes allows us to define resource requests and limits, as well as auto-scaling policies based on CPU or custom metrics. This makes it possible to handle varying workloads while keeping the application responsive, even during peak usage periods.
 
+== Model Evaluation Results
+
+The initial model's performance metrics on the test set are as follows:
+- Mean Absolute Error (MAE): 1.87
+- Root Mean Squared Error (RMSE): 2.45
+- R-squared ($R^2$): 0.00
+
+As shown in pull request @stock_ml_repo_pr6, these results indicate that the model has limited predictive accuracy, with a relatively high average error in stock price predictions. The $R^2$ score of 0.00 suggests that the model does not explain any of the variance in the actual stock prices, highlighting the challenges of forecasting in such a volatile domain.
+
 = Performance Improvements
-
-TODO speak in first version about the initial model performance
-
-TODO explain who's done what
 
 As seen in the previous section, the initial model@stock_ml_repo_pr6 was not performing well, with high error rates and low predictive accuracy. To address these issues, we implemented several performance improvements to enhance the model's capabilities, described in detail in the pull request @stock_ml_repo_pr10.
 
