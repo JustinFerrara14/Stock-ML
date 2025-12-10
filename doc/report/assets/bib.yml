@@ -1,7 +1,7 @@
 stock_ml_repo:
   type: Web
   title: Stock-ML Repository
-  author: Justin Ferrara
+  author: JustinFerrara14
   url:
     value: https://github.com/JustinFerrara14/Stock-ML
     date: 2025-12-08
@@ -9,7 +9,7 @@ stock_ml_repo:
 stock_ml_repo_pr6:
   type: Web
   title: Stock-ML Repository - Change to financial data PR 6
-  author: Justin Ferrara
+  author: JustinFerrara14
   url:
     value: https://github.com/JustinFerrara14/Stock-ML/pull/6
     date: 2025-12-08
@@ -21,7 +21,7 @@ stock_ml_repo_pr6:
 stock_ml_repo_pr10:
   type: Web
   title: Stock-ML Repository - Performance Improvements PR 10
-  author: Justin Ferrara
+  author: JustinFerrara14
   url:
     value: https://github.com/JustinFerrara14/Stock-ML/pull/10
     date: 2025-12-08
@@ -33,7 +33,7 @@ stock_ml_repo_pr10:
 stock_ml_repo_pr12:
   type: Web
   title: Stock-ML Repository - Data Drift Integration PR 12
-  author: Justin Ferrara
+  author: JustinFerrara14
   url:
     value: https://github.com/JustinFerrara14/Stock-ML/pull/12
     date: 2025-12-08
@@ -45,7 +45,7 @@ stock_ml_repo_pr12:
 stock_ml_repo_branch_artificial_drift:
   type: Web
   title: Stock-ML Repository - Create Artificial Data Drift Branch
-  author: Justin Ferrara
+  author: JustinFerrara14
   url:
     value: https://github.com/JustinFerrara14/Stock-ML/tree/10-create-artificial-datadrift
     date: 2025-12-08

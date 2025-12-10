@@ -35,13 +35,11 @@
 
 = Introduction
 
-The objective of this project is to develop a simple predictive model capable of estimating future stock prices. The model uses historical daily closing prices as input and predicts the closing prices for the following five days. The dataset consists of five years of historical data for several major technology companies listed on the National Association of Securities Dealers Automated Quotations (NASDAQ) index.
+The objective of this project is to develop a simple predictive model capable of estimating future stock prices with within an MLOps framework. The model uses historical daily closing prices as input and predicts the closing prices for the following five days. The dataset consists of five years of historical data for several major technology companies listed on the National Association of Securities Dealers Automated Quotations (NASDAQ) index.
 
 As part of the advanced MLOps component, the project focuses on analysing data drift and its impact on model performance. Each week, we perform a data drift analysis and retrain the model using newly collected data. The performance of the newly created model is then compared to older versions. This approach allows us to evaluate whether previously trained models degrade over time as market conditions evolve. The goal is to understand how data drift affects predictive accuracy and to highlight the value of continuous monitoring and retraining within an MLOps workflow.
 
 The results of this project will provide insights into the challenges of stock price prediction and the importance of managing data drift in machine learning systems deployed in dynamic environments.
-
-TODO put elsewhere the following
 
 The contributions of each team member are as follows:
 - Justin Ferrara: Data acquisition, preprocessing, initial model development.
@@ -69,38 +67,15 @@ Together, these forms of drift—model, data, feature, and label, highlight the 
 
 Data drift detection aims to identify changes in the statistical properties of the input features over time, which may lead to a degradation in model performance if not properly monitored. Several families of methods can be used to detect such shifts. Some common approaches include:
 
-- Statistical tests: they compare the distributions of features between the training data and more recent production data. Tests such as the Kolmogorov–Smirnov test or the Chi-squared test can be applied to continuous and categorical variables respectively, in order to identify statistically significant distributional changes @evidently_data_drift_article @evidently_explainer_drift.
+- Statistical tests: they compare the distributions of features between the training data and more recent production data. Tests such as the Kolmogorov-Smirnov test or the Chi-squared test can be applied to continuous and categorical variables respectively, to identify statistically significant distributional changes @evidently_data_drift_article @evidently_explainer_drift.
 
 - Distance metrics: Measures such as Kullback-Leibler divergence or Jensen-Shannon divergence quantify the difference between probability distributions of features over time @evidently_data_drift_article @evidently_explainer_drift.
 
 - Visualization: Tools like histograms, box plots, or density plots provide an intuitive way to inspect how feature distributions evolve and to complement quantitative metrics with visual evidence @detecting_data_drift_article_mlmastery.
 
-- Machine learning-based methods: Machine learning–based methods can be used to model the normal behaviour of the data and flag deviations as potential drift; for example, unsupervised models such as autoencoders can learn typical patterns in the training data and highlight anomalous inputs that diverge from these patterns @detecting_data_drift_article_mlmastery.
+- Machine learning-based methods: Machine learning-based methods can be used to model the normal behaviour of the data and flag deviations as potential drift; for example, unsupervised models such as autoencoders can learn typical patterns in the training data and highlight anomalous inputs that diverge from these patterns @detecting_data_drift_article_mlmastery.
 
-= Project Scoping
-
-The project aims to develop a machine learning model to predict short-term stock closing price variations, while implementing a comprehensive MLOps lifecycle to ensure the model's robustness and adaptability over time.
-
-== Objectives
-
-The objective of this project is to predict the daily closing price variation of different companies using machine learning techniques. The purpose is to provide useful insights to investors. The key problem to solve is the accurate prediction of stock prices, which vary due to market volatility and numerous influencing factors.
-
-The advanced MLOps topic covered in this project is model drift detection and mitigation, with a specific focus on data drift and feature drift.In this context, we will monitor how changes in the input data distribution over time affect the model's performance. The main goal is to maintain the model's reliability and adaptability, ensuring it remains robust as market conditions evolve.
-
-== Requirements
-
-This project will require the following resources:
-
-- Financial datasets containing daily stock data (open, close, high, low, volume, etc.) with sufficient historical depth.
-- Development environment for data science and MLOps:
-  - Python (pandas, scikit-learn, TensorFlow/PyTorch)
-  - DVC for experiment tracking and versioning
-  - BentoML for model packaging and deployment
-  - Docker and GitHub Actions for CI/CD
-  - Cloud deployment environment (Google Cloud)
-  - Monitoring tools to track model drift (Evidently AI)
-
-= First version of the ML model
+= Model Development and Deployment
 
 This section presents the first version of the ML model, covering the data engineering pipeline, the machine learning model, its deployment within an MLOps workflow and the evaluation of its performance.
 
@@ -110,29 +85,7 @@ The data engineering phase is a critical foundation for the stock price predicti
 
 === Data acquisition
 
-To acquire the necessary data for stock price prediction, we used the #link("https://www.nasdaq.com")[https://www.nasdaq.com] website to download historical stock data for 20 stocks in the NASDAQ index. The data collected is in CSV format, and contains columns such as Date, Close, Open, High, Low, and Volume for the past 5 years. The following companies were selected for this project:
-- Apple Inc. (AAPL)
-- AMD Inc. (AMD)
-- Amazon.com, Inc. (AMZN)
-- ASML Holding N.V. (ASML)
-- Broadcom Inc. (AVGO)
-- Cisco Systems, Inc. (CSCO)
-- Alphabet Inc. (GOOGL)
-- International Business Machines Corporation (IBM)
-- Facebook, Inc. (META)
-- Microsoft Corporation (MSFT)
-- Micron Technology, Inc. (MU)
-- Netflix, Inc. (NFLX)
-- NVIDIA Corporation (NVDA)
-- Oracle Corporation (ORCL)
-- Palantir Technologies Inc. (PLTR)
-- Qualcomm Incorporated (QCOM)
-- Starbucks Corporation (SBUX)
-- Tencent Holdings Ltd. (TCEHY)
-- Tesla, Inc. (TSLA)
-- Taiwan Semiconductor Manufacturing Company Ltd. (TSM)
-
-The data spans from 11/10/2020 to 11/07/2025 for each stock, providing a comprehensive dataset for training and evaluating the machine learning models.
+To acquire the necessary data for stock price prediction, we used the #link("https://www.nasdaq.com")[nasdaq.com] website to download historical stock data for 20 stocks in the NASDAQ index. The data collected is in CSV format, and contains columns such as Date, Close, Open, High, Low, and Volume for the past 5 years. The companies listed in @selected_companies were chosen based on their market capitalization and relevance in the technology sector. The data spans from `11/10/2020` to `11/07/2025` for each stock, providing a comprehensive dataset for training and evaluating the machine learning models.
 
 === Data preprocessing <data_preprocessing_step>
 
@@ -141,11 +94,11 @@ The preprocessing steps aim to clean the raw data and transform it into a format
 - Checking for missing values and handling them appropriately (either by removal of incomplete rows or, when necessary, by simple imputation strategies).
 - Converting the closing prices to float data variables, representing the variation in percent from the previous closing price.
 - Normalizing the numerical features so that they lie on comparable scales, which is important for neural network training stability.
-- Sorting the data chronologically by date and splitting it into training, validation and test sets in a time-respecting manner, in order to evaluate the model's performance on unseen future periods.
+- Sorting the data chronologically by date and splitting it into training, validation and test sets in a time-respecting manner, to evaluate the model's performance on unseen future periods.
 
 === Data storage
 
-The raw and preprocessed datasets are stored in CSV format and tracked with DVC for data version control. This setup makes it possible to reproduce experiments, roll back to previous dataset versions and keep data, code and model artifacts aligned over time.
+The raw and pre-processed datasets are stored in CSV format and tracked with DVC for data version control. This setup makes it possible to reproduce experiments, roll back to previous dataset versions and keep data, code and model artifacts aligned over time.
 
 The data is stored in a dedicated S3 bucket for easy access and scalability (as shown in the tutorial @mlops_guide).
 
@@ -195,20 +148,21 @@ The workflow is triggered automatically when:
 
 It consists of two main jobs:
 
-1. Train and Report (train-and-report)
+1. Train and Report (`train-and-report`)
 
   Triggered on pull requests, this job automates model retraining and experiment reporting:
 
-  - Checks out the repository and sets up Python 3.12.
+  - Checks out the repository and sets up Python `3.12`.
   - Installs dependencies and authenticates with Google Cloud.
-  - Reproduces the training pipeline using DVC (dvc repro --pull).
+  - Reproduces the training pipeline using DVC (`dvc repro --pull`).
   - Pushes updated model artifacts and metrics to the DVC remote storage.
-  - Commits changes to dvc.lock when necessary.- Generates a CML report that compares the new experiment results with those of the main branch, including:
-    - Parameter and metric differences (dvc params diff, dvc metrics diff),
+  - Commits changes to `dvc.lock` when necessary.
+  - Generates a CML report that compares the new experiment results with those of the main branch, including:
+    - Parameter and metric differences (`dvc params diff`, `dvc metrics diff`).
     - Visual comparisons of plots (e.g. training history, prediction previews).
   - Publishes the report as a comment in the pull request for review.
 
-2. Publish and Deploy (publish-and-deploy)
+2. Publish and Deploy (`publish-and-deploy`)
 
   Triggered when changes are merged into the main branch, this job:
 
@@ -262,7 +216,7 @@ To avoid overfitting and improve generalization, we increased the dropout rate i
 
 The performance improvements led to significant enhancements in the model's predictive accuracy and reliability. The key results are summarized in the pull request @stock_ml_repo_pr10, which includes:
 - A reduction in MAE from 1.87 to 0.66.
-- An decrease in $R^2$ score from 0.00 to -1.19 (which is not an improvement but expected due to the nature of stock price prediction).
+- A decrease in $R^2$ score from 0.00 to -1.19 (which is not an improvement but expected due to the nature of stock price prediction).
 - Visualizations comparing the model's predictions before and after the improvements, demonstrating better alignment with actual stock prices.
 
 = Data Drift Analysis and Integration
@@ -305,20 +259,13 @@ A new data drift detection step was added to the workflow. This step performs th
 - Inserts a summary of the JSON report into the pipeline comment containing:
   - Whether significant drift was detected for any features.
   - The number of drifted columns (features).
-  - The number of columns analyzed (features).
+  - The number of columns analysed (features).
 - Train both the base (current) and candidate models, allowing for performance comparison.
 - Insert model performance metrics into the pipeline comment for both models.
 
 This approach ensures that every potential model update is accompanied by a thorough drift analysis, enabling informed decisions about model retraining and deployment.
 
 An example of the pipeline comment is shown in pull request @stock_ml_repo_pr12. The @evidently_html_report_no_drift shows the generated report from the `Evidently` package on the original data without drift.
-
-#figure(
-  image("./img/originalDataDrift.png"),
-  caption: [
-    Data Drift Report Example from Evidently
-  ],
-) <evidently_html_report_no_drift>
 
 == Monitoring Approach
 
@@ -334,18 +281,11 @@ Although this approach ensures consistent oversight during the weekly data refre
 
 The integration of data drift detection into the MLOps pipeline provided valuable insights into the stability of the input data over time. However, the analysis revealed that no significant data drift was detected between the current and candidate datasets. Both models, the fixed base model and the fine-tuned candidate model performed similarly over time, indicating that the underlying data distribution remained relatively stable during the evaluation period. This might be attributed to the nature of stock market data, which can exhibit periods of stability interspersed with volatility. The pull request @stock_ml_repo_pr12 contains detailed results and visualizations from the drift analysis.
 
-To have a better comprehension of the data drift and to show a sample of the results obtained, a fake data drift has been implemented in branch @stock_ml_repo_branch_artificial_drift. This allows to see how the data drift detection works in practice and to validate the effectiveness of the implemented approach. The @evidently_html_report_simulated_drift shows an example of data drift detected using the fake data drift implementation.
-
-#figure(
-  image("./img/simulatedDataDrift.png"),
-  caption: [
-    Artificial Data Drift Report Example from Evidently
-  ],
-) <evidently_html_report_simulated_drift>
+To have a better comprehension of the data drift and to show a sample of the results obtained, a fake data drift has been implemented in a branch @stock_ml_repo_branch_artificial_drift. This allows to see how the data drift detection works in practice and to validate the effectiveness of the implemented approach. The @evidently_html_report_simulated_drift shows an example of data drift detected using the fake data drift implementation.
 
 = Conclusion
 
-This project demonstrated how a complete MLOps workflow can support the development of a stock price prediction model, from data acquisition and preprocessing to training, deployment, and automated monitoring. Although stock forecasting remains challenging and the model's predictive performance is limited, the improvements introduced—especially in feature engineering and model tuning—led to more stable results.
+This project demonstrated how a complete MLOps workflow can support the development of a stock price prediction model. Although stock forecasting remains challenging and the model's predictive performance is limited, the improvements introduced—especially in feature engineering and model tuning—led to more stable results.
 
 Data drift detection was successfully integrated into the pipeline using Evidently. While no real drift was observed in the available data, the artificial drift experiment confirmed that the system can identify and report distribution changes when they occur. This validates the monitoring approach and ensures that future updates can be assessed reliably.
 
@@ -356,3 +296,46 @@ The project's main limitations are the restricted feature set and the simplicity
 // Bibliography
 #bibliography("assets/bib.yml", full: true)
 
+#pagebreak()
+
+= Annexes
+
+== Selected Companies <selected_companies>
+
+The following 20 companies were selected from the NASDAQ index for stock price prediction:
+- Apple Inc. (AAPL)
+- AMD Inc. (AMD)
+- Amazon.com, Inc. (AMZN)
+- ASML Holding N.V. (ASML)
+- Broadcom Inc. (AVGO)
+- Cisco Systems, Inc. (CSCO)
+- Alphabet Inc. (GOOGL)
+- International Business Machines Corporation (IBM)
+- Facebook, Inc. (META)
+- Microsoft Corporation (MSFT)
+- Micron Technology, Inc. (MU)
+- Netflix, Inc. (NFLX)
+- NVIDIA Corporation (NVDA)
+- Oracle Corporation (ORCL)
+- Palantir Technologies Inc. (PLTR)
+- Qualcomm Incorporated (QCOM)
+- Starbucks Corporation (SBUX)
+- Tencent Holdings Ltd. (TCEHY)
+- Tesla, Inc. (TSLA)
+- Taiwan Semiconductor Manufacturing Company Ltd. (TSM)
+
+== Data Drift Reports
+
+#figure(
+  image("./img/originalDataDrift.png"),
+  caption: [
+    Data Drift Report Example from Evidently
+  ],
+) <evidently_html_report_no_drift>
+
+#figure(
+  image("./img/simulatedDataDrift.png"),
+  caption: [
+    Artificial Data Drift Report Example from Evidently
+  ],
+) <evidently_html_report_simulated_drift>
