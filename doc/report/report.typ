@@ -41,11 +41,12 @@ As part of the advanced MLOps component, the project focuses on analysing data d
 
 The results of this project will provide insights into the challenges of stock price prediction and the importance of managing data drift in machine learning systems deployed in dynamic environments.
 
-The contributions of each team member are as follows:
-- Justin Ferrara: Data acquisition, preprocessing, initial model development.
-- Luca Da Silva: Data drift research, pipeline integration, report writing.
-- Rafael Cardoso: Research on various topics and report writing.
-- Thomas Maksimous: Report writing and making presentations.
+= Team Contributions
+
+- *Justin Ferrara:* Responsible for data acquisition, data preprocessing, and development of the initial predictive model.
+- *Luca Da Silva:* Led the investigation of data drift, integrated the MLOps pipeline components, and contributed to the preparation of the written report.
+- *Rafael Cardoso:* Conducted supporting research across relevant topics and contributed to the writing of the report.
+- *Thomas Maksimous:* Contributed to the written report and developed accompanying presentation materials.
 
 #pagebreak()
 
@@ -85,7 +86,7 @@ The data engineering phase is a critical foundation for the stock price predicti
 
 === Data acquisition
 
-To acquire the necessary data for stock price prediction, we used the #link("https://www.nasdaq.com")[nasdaq.com] website to download historical stock data for 20 stocks in the NASDAQ index. The data collected is in CSV format, and contains columns such as Date, Close, Open, High, Low, and Volume for the past 5 years. The companies listed in @selected_companies were chosen based on their market capitalization and relevance in the technology sector. The data spans from `11/10/2020` to `11/07/2025` for each stock, providing a comprehensive dataset for training and evaluating the machine learning models.
+To acquire the necessary data for stock price prediction, we used the #link("https://www.nasdaq.com")[nasdaq.com] website to download historical stock data for 20 stocks in the NASDAQ index. The data collected is in CSV format, and contains columns such as Date, Close, Open, High, Low, and Volume for the past 5 years. The companies listed in @selected_companies were chosen based on their market capitalization and relevance in the technology sector. The data spans from `11/10/2020` to `11/07/2025` for each stock, providing a comprehensive dataset for training and evaluating the machine learning models. We choose these companies to have a diverse representation of the technology sector, which is known for its volatility and rapid changes.
 
 === Data preprocessing <data_preprocessing_step>
 
@@ -123,9 +124,9 @@ A validation set is used to monitor the model's performance during training, tun
 The model's performance is evaluated using metrics such as Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared ($R^2$). These metrics provide insights into how well the model predicts stock prices compared to actual values.
 
 Here is a brief explanation of the evaluation metrics used:
-- The Mean Absolute Error (MAE) measures the average absolute difference between predicted and actual values, showing how far predictions are from reality on average.
-- The Root Mean Squared Error (RMSE) calculates the square root of the average squared errors, giving more weight to larger mistakes and highlighting significant prediction deviations.
-- The R-squared ($R^2$) indicates how well the model explains the variance in the actual data, with values closer to 1 representing better predictive accuracy. @model_evaluation_metrics_article
+- The *Mean Absolute Error (MAE)* measures the average absolute difference between predicted and actual values, showing how far predictions are from reality on average.
+- The *Root Mean Squared Error (RMSE)* calculates the square root of the average squared errors, giving more weight to larger mistakes and highlighting significant prediction deviations.
+- The *R-squared ($R^2$)* indicates how well the model explains the variance in the actual data, with values closer to 1 representing better predictive accuracy. @model_evaluation_metrics_article
 
 The best and worst predictions are visualized using plots to illustrate the model's performance and to better understand its strengths and weaknesses.
 
@@ -285,7 +286,7 @@ To have a better comprehension of the data drift and to show a sample of the res
 
 = Conclusion
 
-This project demonstrated how a complete MLOps workflow can support the development of a stock price prediction model. Although stock forecasting remains challenging and the model's predictive performance is limited, the improvements introduced—especially in feature engineering and model tuning—led to more stable results.
+This project demonstrated how a complete MLOps workflow can support the development of a stock price prediction model. Although stock forecasting remains challenging and the model's predictive performance is limited, the improvements introduced, especially in feature engineering and model tuning, led to more stable results.
 
 Data drift detection was successfully integrated into the pipeline using Evidently. While no real drift was observed in the available data, the artificial drift experiment confirmed that the system can identify and report distribution changes when they occur. This validates the monitoring approach and ensures that future updates can be assessed reliably.
 
