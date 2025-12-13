@@ -101,15 +101,17 @@ After submitting the JSON input to the model, the model responded with the follo
 ```
 
 The predicted returns can be converted back to stock prices using the last known stock price from the input data and the formula:
-- Predicted Price for `15.12.2025`: 175.02 * (1 + 0.3740/100) = 175.65
-- Predicted Price for `16.12.2025`: 175.65 * (1 - 0.4399/100) = 174.88
-- Predicted Price for `17.12.2025`: 174.88 * (1 - 0.0945/100) = 174.71
-- Predicted Price for `18.12.2025`: 174.71 * (1 - 0.5076/100) = 173.84
-- Predicted Price for `19.12.2025`: 173.84 * (1 - 0.2259/100) = 173.45
+- Predicted Price for `15.12.2025`: 175.02 * (1 + 0.3740/100) = **175.65**
+- Predicted Price for `16.12.2025`: 175.65 * (1 - 0.4399/100) = **174.88**
+- Predicted Price for `17.12.2025`: 174.88 * (1 - 0.0945/100) = **174.71**
+- Predicted Price for `18.12.2025`: 174.71 * (1 - 0.5076/100) = **173.84**
+- Predicted Price for `19.12.2025`: 173.84 * (1 - 0.2259/100) = **173.45**
 
 ---
 
 ## 🛠️ Useful commands
+
+The following commands can be used to set up the environment, run the DVC pipeline, serve the model locally, build and run the Docker container, and deploy to GKE.
 
 ```bash
 python3.12 -m venv .venv
