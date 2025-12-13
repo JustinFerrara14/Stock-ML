@@ -76,7 +76,40 @@ Powered by GitHub Actions + Kubernetes runner:
 
 ---
 
-## Useful commands
+## 📦 Usage
+
+To get a prediction from the deployed model, you can download a CSV file of stock data (e.g., from [nasdaq.com](https://www.nasdaq.com)) and convert it to JSON input format using the [./src/generateInput.py](./src/generateInput.py) script. An example of CSV file is provided at [./doc/samplePrediction/stock_data.csv](./doc/samplePrediction/stock_data.csv) which as been downloaded [nasdaq.com](https://www.nasdaq.com) for NVIDIA Corporation (NVDA) on December 13, 2025.
+
+```bash
+python3 src/generateInput.py
+```
+
+This will create a JSON file at [./doc/samplePrediction/stock_data.json](./doc/samplePrediction/stock_data.json). You can then send this JSON content to the deployed model's REST API endpoint using a tool like `curl` or using the FastAPI Swagger UI.
+
+After submitting the JSON input to the model, the model responded with the following JSON output containing the predicted stock prices for the next 5 days:
+
+```json
+{
+  "predicted_return_next5": [
+    0.37401431798934937,
+    -0.4399341940879822,
+    -0.09452365338802338,
+    -0.5075818300247192,
+    -0.22593094408512115
+  ]
+}
+```
+
+The predicted returns can be converted back to stock prices using the last known stock price from the input data and the formula:
+- Predicted Price for `15.12.2025`: 175.02 * (1 + 0.3740/100) = 175.65
+- Predicted Price for `16.12.2025`: 175.65 * (1 - 0.4399/100) = 174.88
+- Predicted Price for `17.12.2025`: 174.88 * (1 - 0.0945/100) = 174.71
+- Predicted Price for `18.12.2025`: 174.71 * (1 - 0.5076/100) = 173.84
+- Predicted Price for `19.12.2025`: 173.84 * (1 - 0.2259/100) = 173.45
+
+---
+
+## 🛠️ Useful commands
 
 ```bash
 python3.12 -m venv .venv
@@ -108,6 +141,9 @@ kubectl get nodes
 kubectl apply -f kubernetes/deployment.yaml
 kubectl apply -f kubernetes/service.yaml
 
+# Get external IP in "LoadBalancer Ingress" field
+kubectl describe services stock-ml
+
 kubectl create secret generic github-runner-pat --from-literal=token=$GH_RUNNER_PAT
 kubectl apply -f kubernetes/runner.yaml
 kubectl get pods
@@ -115,74 +151,4 @@ kubectl delete -f kubernetes/runner.yaml
 
 # Delete cluster after use
 gcloud container clusters delete $GCP_K8S_CLUSTER_NAME --zone=$GCP_K8S_CLUSTER_ZONE
-```
-
-
-Predict stock request:
-
-```json
-{
-  "stock_data": [
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05},
-    {"Return": 0.12, "SMA_5": 0.10, "SMA_10": 0.08, "EMA_5": 0.11, "High_Low_Spread": 1.5, "Open_Close_Ratio": 1.002, "Volume_Change": 0.05}
-  ]
-}
 ```
