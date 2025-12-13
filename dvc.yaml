@@ -9,6 +9,16 @@ stages:
     - prepare
     outs:
     - data/prepared
+  prepare_candidate:
+    cmd: python3.12 src/prepare.py data/raw_candidate data/prepared_candidate
+    deps:
+    - data/raw_candidate
+    - src/prepare.py
+    - src/utils/seed.py
+    params:
+    - prepare
+    outs:
+    - data/prepared_candidate
   train:
     cmd: python3.12 src/train.py data/prepared model
     deps:
@@ -21,8 +31,20 @@ stages:
     - model
     plots:
     - evaluation/plots/loss_curve.png
+  train_candidate:
+    cmd: python3.12 src/train.py data/prepared_candidate model_candidate
+    deps:
+    - data/prepared_candidate
+    - src/train.py
+    - src/utils/seed.py
+    params:
+    - train
+    outs:
+    - model_candidate
+    plots:
+    - evaluation/plots/loss_curve_candidate.png
   evaluate:
-    cmd: python3.12 src/evaluate.py model data/prepared
+    cmd: python3.12 src/evaluate.py model data/prepared ""
     deps:
     - model
     - src/evaluate.py
@@ -34,3 +56,26 @@ stages:
     - evaluation/plots/best_prediction_2.png
     - evaluation/plots/worst_prediction_1.png
     - evaluation/plots/worst_prediction_2.png
+  evaluate_candidate:
+    cmd: python3.12 src/evaluate.py model_candidate data/prepared_candidate _candidate
+    deps:
+    - model_candidate
+    - src/evaluate.py
+    metrics:
+    - evaluation/metrics_candidate.json
+    plots:
+    - evaluation/plots/forecast_example_candidate.png
+    - evaluation/plots/best_prediction_1_candidate.png
+    - evaluation/plots/best_prediction_2_candidate.png
+    - evaluation/plots/worst_prediction_1_candidate.png
+    - evaluation/plots/worst_prediction_2_candidate.png
+  drift_analysis:
+    cmd: python3.12 src/drift_analysis.py data/prepared data/prepared_candidate evaluation/drift_report.html evaluation/drift_summary.json
+    deps:
+    - data/prepared
+    - data/prepared_candidate
+    - src/drift_analysis.py
+    metrics:
+    - evaluation/drift_summary.json
+    plots:
+    - evaluation/drift_report.html

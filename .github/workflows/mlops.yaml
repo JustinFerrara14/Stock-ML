@@ -71,6 +71,24 @@ jobs:
           echo "## Metrics workflow vs. main" >> report.md
           dvc metrics diff main --md >> report.md
 
+          # Data drift summary
+          echo "## Data Drift Summary (data/prepared vs data/prepared_candidate)" >> report.md
+          if [ -f "evaluation/drift_summary.json" ]; then
+            DRIFT_DATASET=$(python -c "import json; s=json.load(open('evaluation/drift_summary.json')); print(s.get('dataset_drift'))")
+            DRIFT_SHARE=$(python -c "import json; s=json.load(open('evaluation/drift_summary.json')); print(s.get('share_of_drifted_columns'))")
+            DRIFT_COLS=$(python -c "import json; s=json.load(open('evaluation/drift_summary.json')); print(s.get('number_of_columns'))")
+
+            echo "" >> report.md
+            echo "| Metric | Value |" >> report.md
+            echo "|--------|-------|" >> report.md
+            echo "| Dataset drift detected | $DRIFT_DATASET |" >> report.md
+            echo "| Share of drifted columns | $DRIFT_SHARE |" >> report.md
+            echo "| Number of columns | $DRIFT_COLS |" >> report.md
+          else
+            echo "" >> report.md
+            echo "_Data drift summary not found (evaluation/drift_summary.json)._" >> report.md
+          fi
+
           # Compare plots (images) to main branch
           dvc plots diff main
 
@@ -80,37 +98,96 @@ jobs:
           # Create training history plot
           echo "### Training History" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve "Training History")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve.png "Training History (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_loss_curve_candidate.png "Training History (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve.png "Training History")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve.png "Training History (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_loss_curve_candidate.png "Training History (Dataset 2)")' >> report.md
 
           # Create best 1 predictions preview
           echo "### Best Prediction 1 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_1_candidate.png "Best Prediction 1 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1.png "Best Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_1_candidate.png "Best Prediction 1 Preview (Dataset 2)")' >> report.md
 
           # Create best 2 predictions preview
           echo "### Best Prediction 2 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_best_prediction_2_candidate.png "Best Prediction 2 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2.png "Best Prediction 2 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_best_prediction_2_candidate.png "Best Prediction 2 Preview (Dataset 2)")' >> report.md
 
           # Create worst 1 predictions preview
           echo "### Worst Prediction 1 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_1_candidate.png "Worst Prediction 1 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1.png "Worst Prediction 1 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_1_candidate.png "Worst Prediction 1 Preview (Dataset 2)")' >> report.md
 
           # Create worst 2 predictions preview
           echo "### Worst Prediction 2 Preview" >> report.md
           echo "#### main" >> report.md
-          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2.png "Worst Predictions 2 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2.png "Worst Predictions 2 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/main_evaluation_plots_worst_prediction_2_candidate.png "Worst Predictions 2 Preview (Dataset 2)")' >> report.md
           echo "#### workspace" >> report.md
-          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2.png "Worst Prediction 2 Preview")' >> report.md
+          echo "##### Original Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2.png "Worst Prediction 2 Preview (Dataset 1)")' >> report.md
+          echo "##### New Dataset" >> report.md
+          echo '![](./dvc_plots/static/workspace_evaluation_plots_worst_prediction_2_candidate.png "Worst Prediction 2 Preview (Dataset 2)")' >> report.md
+
+          # Model-level comparison between the two datasets on this branch
+          echo "## Model comparison (Original Dataset vs New Dataset)" >> report.md
+
+          METRICS_1="evaluation/metrics.json"
+          METRICS_2="evaluation/metrics_candidate.json"
+
+          if [ -f "$METRICS_1" ] && [ -f "$METRICS_2" ]; then
+            MAE1=$(python -c "import json;print(json.load(open('$METRICS_1'))['mae'])")
+            RMSE1=$(python -c "import json;print(json.load(open('$METRICS_1'))['rmse'])")
+            R21=$(python -c "import json;print(json.load(open('$METRICS_1'))['r2'])")
+
+            MAE2=$(python -c "import json;print(json.load(open('$METRICS_2'))['mae'])")
+            RMSE2=$(python -c "import json;print(json.load(open('$METRICS_2'))['rmse'])")
+            R22=$(python -c "import json;print(json.load(open('$METRICS_2'))['r2'])")
+
+            echo "" >> report.md
+            echo "| Model (dataset)                       | MAE | RMSE | R² |" >> report.md
+            echo "|---------------------------------------|-----|------|----|" >> report.md
+            echo "| Original Dataset (data/prepared)      | $MAE1 | $RMSE1 | $R21 |" >> report.md
+            echo "| New Dataset (data/prepared_candidate) | $MAE2 | $RMSE2 | $R22 |" >> report.md
+
+            echo "" >> report.md
+            echo "> Note: Lower MAE/RMSE indicate a better model." >> report.md
+            echo "> Note: Higher R² indicate a better model." >> report.md
+          else
+            echo "" >> report.md
+            echo "_Model comparison skipped: metrics files not found (expected $METRICS_1 and $METRICS_2)._" >> report.md
+          fi
 
           # Publish the CML report
           cml comment update --target=pr --publish report.md

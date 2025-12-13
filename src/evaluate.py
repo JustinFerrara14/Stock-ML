@@ -72,13 +72,14 @@ def plot_forecast_example(y_true, y_pred, X_test, sample_idx=0):
     return fig
 
 def main() -> None:
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 4):
         print("Arguments error. Usage:\n")
-        print("\tpython3 evaluate_financial_model.py <model-folder> <prepared-dataset-folder>\n")
+        print("\tpython3 evaluate_financial_model.py <model-folder> <prepared-dataset-folder> [suffix]\n")
         exit(1)
 
     model_folder = Path(sys.argv[1])
     prepared_dataset_folder = Path(sys.argv[2])
+    suffix = sys.argv[3] if len(sys.argv) == 4 else ""
     evaluation_folder = Path("evaluation")
     plots_folder = evaluation_folder / "plots"
 
@@ -95,8 +96,10 @@ def main() -> None:
     print(f"Loaded {len(X_test)} test sequences")
 
     model_name = "stock-ml"
+
+    model_path = (model_folder / f"{model_name}.bentomodel").absolute()
     try:
-        bentoml.models.import_model(f"{model_folder}/{model_name}.bentomodel")
+        bentoml.models.import_model(str(model_path))
     except bentoml.exceptions.BentoMLException:
         print("Model already exists in the BentoML store, skipping import.")
 
@@ -127,19 +130,20 @@ def main() -> None:
     for rank, idx in enumerate(best_indices, start=1):
         fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
         fig.suptitle(f"Best Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
-        fig.savefig(plots_folder / f"best_prediction_{rank}.png")
+        fig.savefig(plots_folder / f"best_prediction_{rank}{suffix}.png")
         plt.close(fig)
 
     for rank, idx in enumerate(worst_indices, start=1):
         fig = plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx)
         fig.suptitle(f"Worst Prediction Example (idx={idx}, RMSE={sample_errors[idx]:.2f})")
-        fig.savefig(plots_folder / f"worst_prediction_{rank}.png")
+        fig.savefig(plots_folder / f"worst_prediction_{rank}{suffix}.png")
         plt.close(fig)
 
-    with open(evaluation_folder / "metrics.json", "w") as f:
+    metrics_path = evaluation_folder / ("metrics" + (suffix or "") + ".json")
+    with open(metrics_path, "w") as f:
         json.dump({"mae": mae, "rmse": rmse, "r2": r2}, f, indent=4)
 
-    plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx).savefig(plots_folder / "forecast_example.png")
+    plot_forecast_example(y_test, y_pred, X_test, sample_idx=idx).savefig(plots_folder / f"forecast_example{suffix}.png")
 
     print(f"\nEvaluation results saved in {evaluation_folder.absolute()}")
 

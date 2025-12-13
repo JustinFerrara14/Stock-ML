@@ -11,7 +11,9 @@ import yaml
 import bentoml
 
 from utils.seed import set_seed
+import os
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "" # Disable GPU for training
 
 def create_sequences(df: pd.DataFrame, input_len, output_len):
     """Create sliding windows of input_len days of % returns to predict next output_len days."""
@@ -144,6 +146,17 @@ def main() -> None:
     evaluation_folder = Path("evaluation")
     plots_folder = evaluation_folder / "plots"
 
+    # Ensure plots directory exists
+    plots_folder.mkdir(parents=True, exist_ok=True)
+
+    # Derive a suffix from the model folder name so each stage can have
+    # its own loss curve file tracked by DVC.
+    #   - "model"             -> ""                 (loss_curve.png)
+    #   - "model_candidate" -> "candidate"      (loss_curve_candidate.png)
+    suffix = ""
+    if model_folder.name.startswith("model_"):
+        suffix = "_" + model_folder.name.removeprefix("model_")
+
     plt.figure(figsize=(8, 5))
     plt.plot(history.history["loss"], label="Train Loss")
     plt.plot(history.history["val_loss"], label="Validation Loss")
@@ -153,7 +166,7 @@ def main() -> None:
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(plots_folder / "loss_curve.png")
+    plt.savefig(plots_folder / f"loss_curve{suffix}.png")
     plt.close()
 
 
@@ -183,7 +196,7 @@ def main() -> None:
 
     bentoml.models.export_model(
         f"{model_name}:latest",
-        f"{model_folder}/{model_name}.bentomodel"
+        str((model_folder / f"{model_name}.bentomodel").absolute())
     )
 
     np.save(model_folder / "history.npy", history.history)

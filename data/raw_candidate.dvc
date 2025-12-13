@@ -1,0 +1,6 @@
+outs:
+- md5: a841fc98ae72608151c5ad989d71e724.dir
+  size: 1317043
+  nfiles: 20
+  hash: md5
+  path: raw_candidate
