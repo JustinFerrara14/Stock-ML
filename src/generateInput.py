@@ -5,7 +5,7 @@ from pathlib import Path
 # Paths
 folder_path = Path("./doc/samplePrediction")
 csv_path = folder_path / "stock_data.csv"
-output_json = folder_path / "stock_data_input.json"
+output_json = folder_path / "stock_data.json"
 
 # Load CSV
 df = pd.read_csv(csv_path)
